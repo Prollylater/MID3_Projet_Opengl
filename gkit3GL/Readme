@@ -1,0 +1,7 @@
+Texture.h, Texture.cpp, 
+Meshio.cpp
+Meshio.h
+
+
+Le programme prend au lancement un argument qui sera un angle utilisé pour une rotation du modèle.
+Caméra vu du dessus "implémenté" avec une roatation du model sur l'axe X. Argument : -90

@@ -1,0 +1,11 @@
+0,0,255 water
+0,0,100 Hole
+0,255,0 Plain
+0,100,0 Forest random sampling for tree
+0,150,0 plain random sampling other
+50,0,0 Rockyrock
+100,0,0 Grayrock
+150,0,0 beach
+200,0,0 rock top
+255,0,0 snow
+1,0,0 Light
