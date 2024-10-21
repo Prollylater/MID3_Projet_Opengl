@@ -68,12 +68,12 @@ bool init()
 
     MeshDeform freee = deformer.warpMesh(m_objet[0].positions, m_objet[0].indices, m_objet[0].normals);
 
-    // writeMeshDeform("Freeeeeee.obj", freee);
-
+    deformer.modifPoint(0,0,1,Vector(-0.2,0.0,0.2));
     // deformer.randomModif();
-    // freee = deformer.warpMesh(m_objet[0].positions, m_objet[0].indices, m_objet[0].normals);
+    freee = deformer.warpMesh(m_objet[0].positions, m_objet[0].indices, m_objet[0].normals);
     GLuint tmp_vao = create_buffers(freee.positions, freee.indices,
                                     m_objet[0].texcoords, m_objet[0].normals);
+    writeMeshDeform("Freeeeeee.obj", freee);
 
     m_vao.push_back(tmp_vao);
     // charge et compile les shaders

@@ -163,7 +163,8 @@ GLuint create_buffers_instancesV(GLuint &buffer_translations, const std::vector<
     {
         GLuint buffer = create_buffer(GL_ARRAY_BUFFER, texture_id);
         glEnableVertexAttribArray(4);
-        glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, 0, (const void *)0);
+        //glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, 0, (const void *)0);
+        glVertexAttribPointer(4, 1, GL_UNSIGNED_INT, GL_FALSE, 0, (const void *)0);
         glVertexAttribDivisor(4, 1); // Update per instance
    
     }

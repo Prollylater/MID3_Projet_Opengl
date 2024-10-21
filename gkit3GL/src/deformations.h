@@ -16,19 +16,18 @@ struct FreeFormDeform
 	DeformBox control_points;
 
 	std::array<Vector, 3> repere;		 // S, T, U
-	std::array<Vector, 3> repere_normal; // txu, sxu, sxy //s,t,u
+	std::array<Vector, 3> repere_normal; // txu, sxu, sxt//s,t,u
 
 	void createGrid(const Point &position, float step, float size_x, float size_y, float size_z);
-	void createBoundingGrid(const std::vector<Point> &positions , int div);
-	
+	void createBoundingGrid(const std::vector<Point> &positions, int div);
+
 	Point warpPoint(const Point &positions);
 	void outputGrid(std::vector<Point> &vertices, std::vector<unsigned> &ffd_grid_indices);
 
 	MeshDeform warpMesh(const std::vector<Point> &positions, const std::vector<unsigned> &indices, const std::vector<Vector> &normals);
 	void randomModif();
-
+	void modifPoint(const int &axis_x, const int &axis_y, const int &axis_z, const Vector &dir);
 	Vector getPointInParall(const Point &point);
-
 };
 namespace TwistDeform
 {

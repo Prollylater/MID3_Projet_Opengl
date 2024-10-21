@@ -143,7 +143,7 @@ bool insideFrustum(Region &regions, const Transform &mvp)
         // A single corner in is good enough for now
         inside = inside || ((corner_clip_space.x > -corner_clip_space.w && corner_clip_space.x < corner_clip_space.w) &&
                                (corner_clip_space.y > -corner_clip_space.w && corner_clip_space.y <= corner_clip_space.w) &&
-                               (corner_clip_space.z > 0 && corner_clip_space.z < corner_clip_space.w));
+                               (corner_clip_space.z > -corner_clip_space.w && corner_clip_space.z < corner_clip_space.w));
         // corner_clip_space.z > -corner_clip_space.w  if we don't want to reject element only behind the plane
         // Last one is suspicions. 0 or -corner_clip_space.w
     }

@@ -66,6 +66,7 @@ bool init()
     //regions_size = genWorldFromThatMapmap(m_objet_translations[0], "./data/terrain/mymapgr.png", regions, 5);
     
     std::vector<unsigned> m_objet_texture_id;
+    m_objet_texture_id.resize(1);//Temp Simply add a value at 0
     GLuint tmp_vao = create_buffers_instancesV(m_objet_translate_buffer[0], m_objet[0].positions, m_objet[0].indices,
                                                m_objet[0].texcoords, m_objet[0].normals, m_objet_translations[0], m_objet_texture_id);
 
@@ -200,8 +201,8 @@ void draw()
 
     // Update the buffer with the visible translations
     //TODO: Some adjustment are still needed
-    //glNamedBufferSubData(m_objet_translate_buffer[0], 0, m_objet_translations_visibles[0].size() * sizeof(Vector),
-    //                     m_objet_translations_visibles[0].data());
+    glNamedBufferSubData(m_objet_translate_buffer[0], 0, m_objet_translations_visibles[0].size() * sizeof(Vector),
+                        m_objet_translations_visibles[0].data());
     // glBindBuffer(GL_ARRAY_BUFFER, buffer_translations);
     // glBufferSubData(GL_ARRAY_BUFFER, 0, visibleTranslations.size() * sizeof(glm::vec3), visibleTranslations.data());
 

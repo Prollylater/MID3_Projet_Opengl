@@ -49,9 +49,10 @@ void FreeFormDeform::createBoundingGrid(const std::vector<Point> &positions, int
                std::numeric_limits<float>::max(),
                std::numeric_limits<float>::max());
 
-    Point pmax(std::numeric_limits<float>::min(),
-               std::numeric_limits<float>::min(),
-               std::numeric_limits<float>::min());
+    Point pmax(std::numeric_limits<float>::lowest(),
+               std::numeric_limits<float>::lowest(),
+               std::numeric_limits<float>::lowest());
+
 
     // Iterate through all vertices
     for (const auto &vertex : positions)
@@ -66,6 +67,8 @@ void FreeFormDeform::createBoundingGrid(const std::vector<Point> &positions, int
         pmax.y = std::max(pmax.y, vertex.y);
         pmax.z = std::max(pmax.z, vertex.z);
     }
+std::cout<<pmax<<std::endl;
+std::cout<<pmin<<std::endl;
 
     Vector distance = (pmax - pmin) / (div);
     control_points.resize(div);
@@ -143,6 +146,7 @@ Point FreeFormDeform::warpPoint(const Point &positions)
             {
                 float bern_w = compute_bernst_basis(z_size - 1, stu.z, k);
              q = q + (bern_u * bern_v * bern_w * control_points[i][j][k]);
+             //Bern_w is paper mode
             }
         }
     }
@@ -183,6 +187,12 @@ void FreeFormDeform::randomModif()
         }
     }
 }
+
+void FreeFormDeform::modifPoint(const int& axis_x, const int& axis_y,const int& axis_z,const Vector& dir )
+{
+  control_points[axis_x][axis_y][axis_z]=  control_points[axis_x][axis_y][axis_z] +dir;  
+}
+
 
 // Self contained function to handle
 void FreeFormDeform::outputGrid(std::vector<Point> &vertices, std::vector<unsigned> &ffd_grid_indices)
@@ -238,7 +248,7 @@ MeshDeform FreeFormDeform::warpMesh(const std::vector<Point> &positions, const s
     MeshDeform new_mesh;
     new_mesh.positions.reserve(positions.size());
     new_mesh.indices.reserve(indices.size());
-
+    new_mesh.indices.clear();
     for (size_t counter = 0; counter < positions.size(); counter++)
     {
         new_mesh.positions.push_back(warpPoint(positions[counter]));
