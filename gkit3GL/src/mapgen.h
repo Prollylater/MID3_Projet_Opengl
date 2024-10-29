@@ -26,6 +26,7 @@ int genWorldFromHmap(std::vector<Vector> &translation, const char *map_name, std
         }
     }
 
+    divide = 2;
     if (divide == 1)
     {
         regions.emplace_back(Point(height_map.height(), 0, height_map.width()), Point(0, 0, 0));
@@ -34,10 +35,11 @@ int genWorldFromHmap(std::vector<Vector> &translation, const char *map_name, std
     int regions_height = height_map.height() / divide;
     int regions_width = height_map.width() / divide;
 
-    for (int i = 0; i < divide; i++)
+    for (int j = 0; j < divide; j++)
     {
-        for (int j = 0; j < divide; j++)
+        for (int i = 0; i < divide; i++)
         {
+
             regions.emplace_back(Point(regions_height * (j + 1), 0, regions_width * (i + 1)),
                                  Point(regions_height * j, 0, regions_width * i));
         }

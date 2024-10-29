@@ -197,7 +197,7 @@ int main(int argc, char **argv)
     Context context = create_context(window);
 
     // etat openGL de base / par defaut
-    glClearColor(0.1, 0.1, 0.1, 1);
+    glClearColor(0.3, 0.3, 0.3, 1);
     glClearDepth(1);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);

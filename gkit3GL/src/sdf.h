@@ -33,18 +33,17 @@ public:
         return false;
     }
 
-    virtual bool itrsctSphereTrace(const Vector &o, const Vector &d, Vector &pt) const
+    virtual bool itrsctSphereTrace(const Vector &o, const Vector &d, Vector &pt_cal) const
     {
-        pt = Vector(o);
-        for (int i = 0; i < 1000; i++)
+        pt_cal = Vector(o);
+        for (int i = 0; i < 100; i++)
         {
-            float dist = evaluate(pt);
+            float dist = evaluate(pt_cal);
             if ((dist) < 0)
             {
                 return true;
             }
-            float dist_pt = evaluate(pt);
-            pt = pt + d * std::max(eps, dist_pt); // Lipchitz is 1
+            pt_cal = pt_cal + d * std::max(eps, dist); // Lipchitz is 1
         }
         return false;
     }
@@ -61,7 +60,7 @@ public:
 
     Structure_Tree(ImplicitSurface *init_root) : root(init_root)
     {
-        Bbox = Box(Vector(4, 4, 4), Vector(-4, -4, -4));
+        Bbox = Box(Vector(8, 8, 8), Vector(-8, -8, -8));
         std::cout << "Root" << std::endl;
     }
 
@@ -150,7 +149,6 @@ inline float clamp(const float x, const float min, const float max)
 inline float ndot(const Vector &a, const Vector &b) { return a.x * b.x - a.y * b.y; }
 inline Vector abs_vec(const Vector &pt) { return Vector(std::abs(pt.x), std::abs(pt.y), std::abs(pt.z)); }
 
-// TODO
 class Rhombus : public ImplicitSurface
 {
     float m_lenght_a, m_lenght_b, m_height, m_ra;
@@ -177,27 +175,35 @@ public:
 
         return std::min(std::max(q_val.x, q_val.y), 0.0f) + length(max_vec(q_val, Vector()));
     }
+};
 
-    /* woth and withu=out ra = ok primitive
+class Rhombus_sign : public ImplicitSurface
+{
+    float m_lenght_a, m_lenght_b, m_height, m_ra;
+    // Stretch x axis, stretch y axis, stretch zaxis ,Rounding
+    Vector m_center;
+
+public:
+    Rhombus_sign(float la, float lb, float h, float ra, const Vector &center) : m_lenght_a(la), m_lenght_b(lb), m_height(h), m_ra(ra), m_center(center) {};
+
     float evaluate(const Vector &pt) const override
     {
 
         Vector ptc = abs_vec(pt);
         Vector b_val(m_lenght_a, m_lenght_b, 0.0);
         float f_val = clamp((ndot(b_val, b_val - 2.0f * Vector(ptc.x, ptc.z, 0.0))) /
-                                dot(b_val, b_val),-1.0, 1.0);
+                                dot(b_val, b_val),
+                            -1.0, 1.0);
         //*sign(p.x*b.y+p.z*b.x-b.x*b.y)-ra, p.y-h); YOu can get stable thing by removing sign/everything then -h
         // Waarepdn rhombus, four cone or four sphere hollow rhombus *sign(p.x*b.y+p.z)-ra
 
-        float param_val = (ptc.x * b_val.y + ptc.z * b_val.x - b_val.x * b_val.y);
+        float param_val = (ptc.x * b_val.y + ptc.z);
+        param_val = (param_val) >= 0 ? ((param_val > 0) ? 1 : 0) : -1;
         Vector q_val = Vector(length(Vector(ptc.x, ptc.z, 0.0f) - 0.5 * b_val * Vector(1.0 - f_val, 1.0 + f_val, 0.0f)) * param_val - m_ra,
                               ptc.y - m_height, 0.0);
 
         return std::min(std::max(q_val.x, q_val.y), 0.0f) + length(max_vec(q_val, Vector()));
     }
-
-
-    */
 };
 
 class Capsule : public ImplicitSurface
@@ -245,6 +251,21 @@ public:
     }
 
     */
+};
+
+class Octo : public ImplicitSurface
+{
+    float m_s;
+
+public:
+    Octo(float s) : m_s(s) {};
+
+    float evaluate(const Vector &pt) const override
+    {
+
+        Vector p = abs_vec(pt);
+        return (p.x + p.y + p.z - m_s) * 0.57735027;
+    }
 };
 
 class Torus : public ImplicitSurface
@@ -343,7 +364,72 @@ public:
     {
         Vector p = pt;
         p(axis) = abs(pt(axis));
-        return (m_original->evaluate(pt /* *inverse(Rotation(mattrix)) */));
+        return (m_original->evaluate(p));
+    }
+};
+class Onion_Sdf : public Transformations
+{
+    float m_thickness;
+
+public:
+    Onion_Sdf(ImplicitSurface *original, float thickness)
+        : Transformations(original), m_thickness(thickness)
+    {
+    }
+
+    float evaluate(const Vector &pt) const override
+    {
+
+        return abs(m_original->evaluate(pt)) - m_thickness;
+    }
+};
+
+class Displacement_sdf : public Transformations
+{
+    unsigned axis_x, axis_y, axis_z;
+
+public:
+    Displacement_sdf(ImplicitSurface *original)
+        : Transformations(original)
+    {
+    }
+
+    float evaluate(const Vector &pt) const override
+    {
+        float x = sin(1 * pt.x);
+        float y = sin(17 * pt.y);
+        float z = sin(2 * pt.z);
+
+        float dis =y ;
+        // float dis = sin(5*pt.y); Soft simmetry
+        return (m_original->evaluate(pt) + dis);
+    }
+};
+
+constexpr float default_bend = 10.0;
+
+class Bend : public Transformations
+{
+    float bendtensity;
+    int m_axis;
+
+public:
+    Bend(ImplicitSurface *original, const float &bend = default_bend, const int &axis = 0)
+        : Transformations(original), bendtensity(bend), m_axis(axis)
+    {
+    }
+
+    float evaluate(const Vector &pt) const override
+    {
+        Vector p = pt;
+        float s = sin(bendtensity * p(m_axis));
+        float c = cos(bendtensity * p(m_axis));
+        float bend_x = c * p.x - s * p.y;
+        float bend_y = s * p.x + c * p.y;
+        p.x = bend_x;
+        p.y = bend_y;
+
+        return (m_original->evaluate(p));
     }
 };
 
@@ -453,6 +539,19 @@ public:
     }
 };
 
+class Xor : public CSGNode
+{
+public:
+    Xor(ImplicitSurface *l, ImplicitSurface *r)
+        : CSGNode(l, r) {};
+    float evaluate(const Vector &pt) const override
+    {
+        float a = left->evaluate(pt);
+        float b = right->evaluate(pt);
+        return std::max(std::min(a, b), std::min(-a, -b));
+    }
+};
+
 class SmoothIntersection : public CSGNode
 {
 public:
@@ -526,10 +625,44 @@ public:
     }
 };
 
-// Material class for handling appearance
-class Material
+#include <array>
+class ErodedSdf : public Transformations
 {
-    // Properties like color, texture, etc.
+    Vector m_origin;
+    float sphere_max;
+    float sphere_min;
+    static constexpr int num_dir = 10;
+    std::array<Vector, num_dir> directions;
+
+public:
+    ErodedSdf(ImplicitSurface *original, const Vector &ori)
+        : Transformations(original), m_origin(ori)
+    {
+        for (int i = 0; i < num_dir; ++i)
+        {
+            float theta = (float)i / num_dir * M_PI;                                          // Angle in radians
+            float phi = (float)i / num_dir * 2 * M_PI;                                        // Angle in radians
+            directions[i] = Vector(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)); // Convert to Cartesian
+        }
+    };
+
+    float evaluate(const Vector &pt) const override
+    {
+        // Intersect
+
+        Vector pt_cal = pt;
+
+        ImplicitSurface *hole = m_original;
+
+        for (int i = 0; i < num_dir; ++i)
+        {
+            if (m_original->itrsctSphereTrace(m_origin, directions.at(i), pt_cal))
+            {
+                hole = new SmoothDifference(hole, new Sphere(0.1f, pt_cal));
+            }
+        }
+        return hole->evaluate(pt);
+    }
 };
 
 constexpr int edgeTable[256] = {

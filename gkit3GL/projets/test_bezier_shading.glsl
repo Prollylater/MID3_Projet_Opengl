@@ -31,8 +31,8 @@ in vec3 fragment_normal;
 out vec4 fragment_color;
 void main(){
  float cos = dot(normalize(fragment_normal),normalize(vec3(0.4,0.0,0.3)));
- fragment_color = vec4(0.8,0.12,0.42,1.0) ;
- //fragment_color = vec4(abs(fragment_normal), 1.0);
+  //fragment_color = vec4(0.8,0.12,0.42,1.0) * cos ;
+fragment_color = vec4(abs(fragment_normal), 1.0);
 }
 #endif
 

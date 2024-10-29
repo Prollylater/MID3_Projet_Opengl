@@ -266,7 +266,8 @@ MeshDeform FreeFormDeform::warpMesh(const std::vector<Point> &positions, const s
 Point TwistDeform::twistPoint(const Point &point, int axis, float T)
 {
     Point return_point;
-    float alpha = point(axis) * (360 / T);
+    float alpha = 360*point(axis) / T;
+    //float alpha = cos(2*M_PI/ T)* point(axis);
     switch (axis)
     {
     case (0):
@@ -387,52 +388,46 @@ bool writeMeshDeform(const char *filename, const MeshDeform &deformed)
         return 0;
     }
 
-    for (auto vert_it = deformed.positions.begin(); vert_it != deformed.positions.end(); vert_it++)
+    // Write vertices
+    for (const auto &vert : deformed.positions)
     {
-        mesh_file << "v " << (*vert_it).x
-                  << " " << (*vert_it).y
-                  << " " << (*vert_it).z << "\n";
+        mesh_file << "v " << vert.x << " " << vert.y << " " << vert.z << "\n";
+        if (!mesh_file) return false;  // Check for write success
     }
-    int counter = 0;
-    std::cout << deformed.positions.size() << std::endl;
 
-    if (deformed.normals.size())
+    // Write normals if present
+    if (deformed.normals.size() > 0)
     {
-
-        for (auto normal_it = deformed.normals.begin(); normal_it != deformed.normals.end(); normal_it++)
+        for (const auto &normal : deformed.normals)
         {
-            mesh_file << "vn " << (*normal_it).x
-                      << " " << (*normal_it).y
-                      << " " << (*normal_it).z << "\n";
-        }
-        size_t num_faces = deformed.indices.size();
-        for (size_t i = 0; i < num_faces; i += 3)
-        {
-            if (i + 2 < num_faces)
-            {
-                mesh_file << "f " << deformed.indices[i] << "//" << deformed.indices[i]
-                          << " " << deformed.indices[i + 1] << "//" << deformed.indices[i + 1]
-                          << " " << deformed.indices[i + 2] << "//" << deformed.indices[i + 2]
-                          << "\n";
-            }
+            mesh_file << "vn " << normal.x << " " << normal.y << " " << normal.z << "\n";
+            if (!mesh_file) return false;  // Check for write success
         }
     }
 
-    else
+    // Write faces
+    //TODO BEtter usage of the operator
+    int num_faces = deformed.indices.size();
+    for (int i = 0; i < num_faces; i += 3)
     {
-        size_t num_faces = deformed.indices.size();
-        for (size_t i = 0; i < num_faces; i += 3)
+        if (i + 2 < num_faces)
         {
-            if (i + 2 < num_faces)
+            if (deformed.normals.size() > 0)
             {
-                mesh_file << "f " << deformed.indices[i]
-                          << " " << deformed.indices[i + 1]
-                          << " " << deformed.indices[i + 2]
-                          << "\n";
+                mesh_file << "f " << deformed.indices[i]+1 << " "
+                          << deformed.indices[i + 1]+1 << " "
+                          << deformed.indices[i + 2]+1 << "\n";
             }
+            else
+            {
+                mesh_file << "f " << deformed.indices[i]+1 << "//" << deformed.indices[i]+1 << " "
+                          << deformed.indices[i + 1]+1 << "//" << deformed.indices[i + 1]+1 << " "
+                          << deformed.indices[i + 2]+1 << "//" << deformed.indices[i + 2]+1 << "\n";
+            }
+            if (!mesh_file) return false;  // Check for write success
         }
     }
     std::cout << "Data written!" << std::endl;
 
-    return 0;
+    return true;
 };

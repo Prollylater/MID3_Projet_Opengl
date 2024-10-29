@@ -223,7 +223,7 @@ void draw()
     program_use_texture_array(m_programs[0], "texture_samp_arr", 1, m_texture[1]);
     program_uniform(m_programs[0], "texture_arr_index", texture_arr_index);
 
-    glDrawElementsInstanced(GL_TRIANGLES, m_objet[0].indices.size(), GL_UNSIGNED_INT, 0, m_objet_translations[0].size());
+    glDrawElementsInstanced(GL_TRIANGLES, m_objet[0].indices.size(), GL_UNSIGNED_INT, 0, m_objet_translations_visibles[0].size());
 }
 
 void quit()

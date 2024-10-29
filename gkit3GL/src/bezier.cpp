@@ -15,7 +15,7 @@ void BezierPatches::create_patch(uint8_t degree_m, uint8_t degree_n)
 {
 
     control_point.resize(degree_m);
-    /*for (uint8_t m = 0; m < degree_m; m++)
+    for (uint8_t m = 0; m < degree_m; m++)
     {
         control_point[m].resize(degree_n);
         for (uint8_t n = 0; n < degree_n; n++)
@@ -27,8 +27,8 @@ void BezierPatches::create_patch(uint8_t degree_m, uint8_t degree_n)
 
             control_point[m][n] = {x/5, y/5, z/5};
         }
-    }*/
-
+    }
+    /*
     float z = 0;
     for (float m = 0; m < degree_m; m++)
     {
@@ -43,6 +43,7 @@ void BezierPatches::create_patch(uint8_t degree_m, uint8_t degree_n)
             z = 0;
         }
     }
+    */
 }
 
 Vector BezierPatches::compute_partial_derivU(float u, float v)

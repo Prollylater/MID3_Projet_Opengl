@@ -5,7 +5,8 @@ projects = {
 	"cubeworld"
     ,"test_bezier"
     ,"test_deformations"
-    ,"test_ffd"
+    ,"test_ffd",
+    "test_implicite_surface"
 }
 
 for i, name in ipairs(projects) do

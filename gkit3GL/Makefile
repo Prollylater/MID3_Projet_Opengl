@@ -14,6 +14,7 @@ ifeq ($(config),debug)
   test_bezier_config = debug
   test_deformations_config = debug
   test_ffd_config = debug
+  test_implicite_surface_config = debug
 endif
 ifeq ($(config),release)
   libgkit3GL_config = release
@@ -21,9 +22,10 @@ ifeq ($(config),release)
   test_bezier_config = release
   test_deformations_config = release
   test_ffd_config = release
+  test_implicite_surface_config = release
 endif
 
-PROJECTS := libgkit3GL cubeworld test_bezier test_deformations test_ffd
+PROJECTS := libgkit3GL cubeworld test_bezier test_deformations test_ffd test_implicite_surface
 
 .PHONY: all clean help $(PROJECTS) 
 
@@ -59,12 +61,19 @@ ifneq (,$(test_ffd_config))
 	@${MAKE} --no-print-directory -C . -f test_ffd.make config=$(test_ffd_config)
 endif
 
+test_implicite_surface: libgkit3GL
+ifneq (,$(test_implicite_surface_config))
+	@echo "==== Building test_implicite_surface ($(test_implicite_surface_config)) ===="
+	@${MAKE} --no-print-directory -C . -f test_implicite_surface.make config=$(test_implicite_surface_config)
+endif
+
 clean:
 	@${MAKE} --no-print-directory -C . -f libgkit3GL.make clean
 	@${MAKE} --no-print-directory -C . -f cubeworld.make clean
 	@${MAKE} --no-print-directory -C . -f test_bezier.make clean
 	@${MAKE} --no-print-directory -C . -f test_deformations.make clean
 	@${MAKE} --no-print-directory -C . -f test_ffd.make clean
+	@${MAKE} --no-print-directory -C . -f test_implicite_surface.make clean
 
 help:
 	@echo "Usage: make [config=name] [target]"
@@ -81,5 +90,6 @@ help:
 	@echo "   test_bezier"
 	@echo "   test_deformations"
 	@echo "   test_ffd"
+	@echo "   test_implicite_surface"
 	@echo ""
 	@echo "For more information, see https://github.com/premake/premake-core/wiki"
