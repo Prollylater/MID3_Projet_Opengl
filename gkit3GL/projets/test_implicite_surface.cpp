@@ -82,21 +82,20 @@ bool init()
  // Structure_Tree sculpture(new Union(surface_i,surface_v));
 */
   // INDIGO
+  // GREEN
   /*
-   // GREEN
+    ImplicitSurface *leaf_g = new Bend(new Rhombus(0.30, 0.20, 0.12, 0.20, Vector(0, 0, 0)), -0.1, 0);
+    ImplicitSurface *leaf_g2_bend = new Rotation_trs(new Bend(new Rhombus(0.35, 0.10, 0.1, 0.20, Vector(0, 0, 0)), 0.30, 0), -30, 2);
+    ImplicitSurface *leaf_g2_b_r = new TranslationSdf(new Rotation_trs(leaf_g2_bend, 90, 2), Vector(-1.0, 1.6, 0.0));
+    ImplicitSurface *crown_g = new SmoothUnion(leaf_g2_b_r, leaf_g);
+    ImplicitSurface *crown_g_b = new TranslationSdf(new Rotation_trs(crown_g, 120, 1), Vector(-4.0, 0, -2.4));
+    ImplicitSurface *crown_g_c = new TranslationSdf(new Rotation_trs(crown_g, 240, 1), Vector(-4.0, 0, 2.4));
 
-   ImplicitSurface *leaf_g = new Bend(new Rhombus(0.30, 0.20, 0.12, 0.25, Vector(0, 0, 0)), -0.1, 0);
-   ImplicitSurface *leaf_g2_bend = new Rotation_trs(new Bend(new Rhombus(0.35, 0.10, 0.1, 0.25, Vector(0, 0, 0)), 0.30, 0), -30, 2);
-   ImplicitSurface *leaf_g2_b_r = new TranslationSdf(new Rotation_trs(leaf_g2_bend, 90, 2), Vector(-1.0, 1.6, 0.0));
-   ImplicitSurface *crown_g = new SmoothUnion(leaf_g2_b_r, leaf_g);
-   ImplicitSurface *crown_g_b = new TranslationSdf(new Rotation_trs(crown_g, 120, 1), Vector(-4.0, 0, -2.4));
-   ImplicitSurface *crown_g_c = new TranslationSdf(new Rotation_trs(crown_g, 240, 1), Vector(-4.0, 0, 2.4));
+    ImplicitSurface *surface_g = new TranslationSdf(new Union(new Union(crown_g, crown_g_b), crown_g_c), Vector(2.760,1.0,1.) );
+    */
+  // Structure_Tree sculpture(surface_g);
 
-   ImplicitSurface *surface_g = new Union(new Union(crown_g, crown_g_b), crown_g_c);
-   Structure_Tree sculpture(surface_g);
-
-   // GREEN
- */
+  // GREEN
 
   // PINK
   /*
@@ -108,8 +107,7 @@ bool init()
   // PINK
 
   // YELLOW
-  /*
-  ImplicitSurface *leaf_y = new Rotation_trs(new Rhombus(0.7, 0.12, 0.1, 0.8, Vector(0, 0, 0)), -20, 2);
+  ImplicitSurface *leaf_y = new Rotation_trs(new Rhombus(0.6, 0.12, 0.1, 0.6, Vector(0, 0, 0)), -20, 2);
   ImplicitSurface *leaf_y_a = new TranslationSdf(new Rotation_trs(leaf_y, -30, 1), Vector(-3.1, 0.0, -1.7));
   ImplicitSurface *leaf_y_b = new TranslationSdf(new Rotation_trs(leaf_y, 210, 1), Vector(3.1, 0.0, -1.7));
   ImplicitSurface *leaf_y_c = new TranslationSdf(new Rotation_trs(leaf_y, 90, 1), Vector(0.0, 0.0, 3.4f));
@@ -117,19 +115,22 @@ bool init()
 
   ImplicitSurface *support_y_deco = new TranslationSdf((new Torus(0.17f, 1.0f)), Vector(0.0, -1.0, 0.0));
   ImplicitSurface *surface_y = new Union(leafs_y, support_y_deco);
-  */
+  ImplicitSurface *surface_y_moved = new TranslationSdf(new Rotation_trs(surface_y, 180, 1), Vector(0.0,1.0,1.0));
+
   // YELLOW
 
   // RED
   // ImplicitSurface *structure_r = new Difference( new Rhombus(0.6, 0.8, 0.1, 0.4, Vector(0, 0, 0)) , leaf_i);// Double triangle //Essentially when  Lb is biggger// Strertch with raising 4.0
-  /*
-    ImplicitSurface *structure_r1 = new Displacement_sdf(new Capsule(0.5f, Vector(0, 0, 0), Vector(0, 1.1, 0)));
-    ImplicitSurface *structure_r2 = new Union(new Capsule(0.8f, Vector(0, -0.5, 0), Vector(0, 1.8, 0)), structure_r1);
-    ImplicitSurface *structure_r3 = new Difference(structure_r2, new Capsule(0.7f, Vector(0, 0, 0), Vector(0, 1.7, 0)));
-    ImplicitSurface *structure_r3_in_scene = new TranslationSdf(structure_r3, Vector(0.0,1.60,1.1));
-    */
+
+  /*ImplicitSurface *structure_r1 = new Displacement_sdf(new Capsule(0.5f, Vector(0, 0, 0), Vector(0, 1.1, 0)));
+  ImplicitSurface *structure_r2 = new Union(new Capsule(0.8f, Vector(0, -0.5, 0), Vector(0, 1.8, 0)), structure_r1);
+  ImplicitSurface *structure_r3 = new Difference(structure_r2, new Capsule(0.7f, Vector(0, 0, 0), Vector(0, 1.7, 0)));
+  ImplicitSurface *structure_r3_in_scene = new TranslationSdf(structure_r3, Vector(0.0, 1.60, 1.1));*/
   // Structure_Tree sculpture(new Union(surface_v, structure_r3_in_scene));
+  Structure_Tree sculpture(new Union(surface_y_moved, surface_v));
+
   //  RED
+
   //    Structure_Tree sculpture(new ErodedSdf(new Sphere(0.5f, Vector(0, 0, 0)), Vector(0.f, 0.f, -1.f)));
 
   // Structure_Tree sculpture(new Displacement_sdf(new Sphere(1.0f, Vector(0, 0, 0))));

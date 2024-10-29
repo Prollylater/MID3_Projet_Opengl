@@ -300,7 +300,8 @@ public:
 // Only simple one that don't warp space
 class Rotation_trs : public Transformations
 {
-    Transform rotation;
+    // Transform rotation;
+    Transform inv_rotation;
 
 public:
     Rotation_trs(ImplicitSurface *original, int angle, int axis)
@@ -310,30 +311,35 @@ public:
         {
         case 0:
         {
-            rotation = RotationX(angle);
+            // rotation = RotationX(angle);
+            inv_rotation = Inverse(RotationX(angle));
+
             break;
         }
         case 1:
         {
-            rotation = RotationY(angle);
+            // rotation = RotationY(angle);
+            inv_rotation = Inverse(RotationY(angle));
 
             break;
         }
         case 2:
         {
-            rotation = RotationZ(angle);
+            // rotation = RotationZ(angle);
+            inv_rotation = Inverse(RotationZ(angle));
 
             break;
         }
         default:
-            rotation = RotationX(angle);
+            // rotation = RotationX(angle);
+            inv_rotation = Inverse(RotationX(angle));
             break;
         }
     };
 
     float evaluate(const Vector &pt) const override
     {
-        return (m_original->evaluate(Inverse(rotation)(pt)));
+        return (m_original->evaluate(inv_rotation(pt)));
     }
 };
 class TranslationSdf : public Transformations
@@ -400,7 +406,7 @@ public:
         float y = sin(17 * pt.y);
         float z = sin(2 * pt.z);
 
-        float dis =y ;
+        float dis = y;
         // float dis = sin(5*pt.y); Soft simmetry
         return (m_original->evaluate(pt) + dis);
     }
