@@ -50,36 +50,6 @@ public:
 
     virtual ~ImplicitSurface() = default;
 };
-
-// TREEEE
-class Structure_Tree : public ImplicitSurface
-{
-public:
-    ImplicitSurface *root;
-    Box Bbox;
-
-    Structure_Tree(ImplicitSurface *init_root) : root(init_root)
-    {
-        Bbox = Box(Vector(8, 8, 8), Vector(-8, -8, -8));
-        std::cout << "Root" << std::endl;
-    }
-
-    Structure_Tree(ImplicitSurface *init_root, const Box &box) : root(init_root)
-    {
-        Bbox = box;
-        std::cout << "Root" << std::endl;
-    }
-    float evaluate(const Vector &pt) const override
-    {
-        return root->evaluate(pt);
-    }
-
-    bool inside(const Vector &pt) const override
-    {
-        return root->evaluate(pt);
-    }
-};
-
 // Most functions are pulled straight from there
 //  https://iquilezles.org/articles/distfunctions/
 
@@ -104,19 +74,27 @@ Vector min_vec(const Vector &a, const Vector &b);
 // Need to translate
 class Boxsdf : public ImplicitSurface
 {
-    float m_length;
+    Vector m_length;
     Vector m_center;
 
 public:
-    Boxsdf(const float &l, const Vector &center) : m_length(l), m_center(center) {};
+    Boxsdf(const Vector &l, const Vector &center) : m_length(l), m_center(center) {};
 
     float evaluate(const Vector &pt) const override
     {
         Vector dir = Vector(std::abs(pt.x - m_center.x), std::abs(pt.y - m_center.y), std::abs(pt.z - m_center.z)) -
-                     (Vector(m_length, m_length, m_length) / 2); // Distance to the boundary from the center
+                     (m_length / 2); // Distance to the boundary from the center
         Vector null;
         float az = length(max_vec(dir, null)) + std::min(std::max(dir.x, std::max(dir.y, dir.z)), 0.0f);
         return az;
+    }
+    Vector getLenght() const
+    {
+        return m_length;
+    }
+    Vector getCenter() const
+    {
+        return m_center;
     }
 };
 
@@ -403,7 +381,7 @@ public:
     float evaluate(const Vector &pt) const override
     {
         float x = sin(1 * pt.x);
-        float y = sin(17 * pt.y);
+        float y = sin(10.5 * pt.y);
         float z = sin(2 * pt.z);
 
         float dis = y;
@@ -668,6 +646,131 @@ public:
             }
         }
         return hole->evaluate(pt);
+    }
+};
+
+struct BVH_Node
+{
+    Boxsdf *bounds;
+    int left;
+    int right;
+};
+
+// SPatial subdvision mased
+struct BVH
+{
+    std::vector<BVH_Node> nodes;
+    int root;
+    BVH() = default;
+    BVH(const Box &space)
+    {
+
+        Vector center = space.Center();
+        Vector half_size = abs_vec(space.Diagonal()) / 2.0;
+
+        root = buildBVH(new Boxsdf(half_size, center), 0);
+    }
+    int buildBVH(Boxsdf *space, int level = 0, int max_level = 4)
+    {
+        if (level >= max_level)
+        {
+            return -1;
+        }
+        BVH_Node new_node;
+        new_node.bounds = space;
+        // Split axis alternatively since main space is a square
+        int axis = level % 3;
+
+        Vector split_center = space->getCenter();
+        Vector split_center2 = space->getCenter();
+        Vector half_size = space->getLenght();
+
+        if (axis == 0)
+        {
+            split_center.x += half_size.x / 2.0f; // Shift to the right for the left box
+            split_center2.x -= half_size.x / 2.0f;
+            ; // Shift to the right for the left box
+        }
+        else if (axis == 1)
+        {
+
+            split_center.y += half_size.y / 2.0f;
+            ; // Shift up for the left box
+            split_center2.y -= half_size.y / 2.0f;
+            ; // Shift up for the left box
+        }
+        else
+        {
+
+            split_center.z += half_size.z / 2.0f;
+            ; // Shift forward for the left box
+            split_center2.z -= half_size.z / 2.0f;
+            ; // Shift forward for the left box
+        }
+
+        Boxsdf *left = new Boxsdf(half_size, split_center);
+        Boxsdf *right = new Boxsdf(half_size, split_center2);
+
+        new_node.left = buildBVH(left, level + 1, max_level);
+        new_node.right = buildBVH(right, level + 1, max_level);
+        nodes.push_back(new_node);
+        int position = nodes.size() - 1;
+        return position;
+    }
+};
+
+// TREEEE
+class Structure_Tree : public ImplicitSurface
+{
+public:
+    ImplicitSurface *root;
+    Box Bbox;
+    BVH bounding_hierarchy;
+
+    Structure_Tree(ImplicitSurface *init_root) : root(init_root)
+    {
+        Bbox = Box(Vector(9, 9, 9), Vector(-9, -9, -9));
+        bounding_hierarchy = BVH(Bbox);
+
+    }
+
+    Structure_Tree(ImplicitSurface *init_root, const Box &box) : root(init_root),
+                                                                 bounding_hierarchy(box)
+    {
+        Bbox = box;
+
+        std::cout << "Root" << std::endl;
+    }
+
+    float evaluate_bvh(const Vector &pt, int node) const
+    {
+        if (node < 0)
+        {
+            return -1; // If it came here without being rejected it's good
+        } // Not a node
+        // Evaluate the current
+        float evaluation = bounding_hierarchy.nodes[node].bounds->evaluate(pt);
+        if (evaluation > 0)
+        {
+            return evaluation; // Intersection not found
+        }
+        float left = evaluate_bvh(pt, bounding_hierarchy.nodes[node].left);
+        float right = evaluate_bvh(pt, bounding_hierarchy.nodes[node].right);
+
+        return std::min(left, right);
+    }
+    float evaluate(const Vector &pt) const override
+    {
+        if (evaluate_bvh(pt, bounding_hierarchy.root) > 0)
+        {
+            return 1;
+        }
+        return root->evaluate(pt);
+    }
+
+    bool inside(const Vector &pt) const override
+    {
+        return root->evaluate(pt);
     }
 };
 

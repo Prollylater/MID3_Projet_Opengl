@@ -7,6 +7,7 @@
 
 #include "vec.h"
 
+
 struct Box
 {
   Vector a, b; //!< Lower and upper vertex.
