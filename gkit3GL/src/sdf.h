@@ -21,14 +21,14 @@ public:
     virtual bool itrsctRayMarch(const Vector &o, const Vector &d, Vector &pt) const
     {
         pt = Vector(o);
-        for (int i = 0; i < 5000; i++)
+        for (int i = 0; i < 100; i++)
         {
             float dist = evaluate(pt);
             if (dist < 0)
             {
                 return true;
             }
-            pt = pt + d * eps;
+            pt = pt + d * (eps * 5);
         }
         return false;
     }
@@ -39,7 +39,7 @@ public:
         for (int i = 0; i < 100; i++)
         {
             float dist = evaluate(pt_cal);
-            if ((dist) < 0)
+            if (fabs(dist) < 0)
             {
                 return true;
             }
@@ -334,6 +334,20 @@ public:
     }
 };
 
+class Scalesdf : public Transformations
+{
+    float scale;
+
+public:
+    Scalesdf(ImplicitSurface *original, float scal)
+        : Transformations(original), scale(scal) {};
+
+    float evaluate(const Vector &pt) const override
+    {
+        return (m_original->evaluate(pt / scale)) * scale;
+    }
+};
+
 class Symmetry : public Transformations
 {
     int axis;
@@ -430,8 +444,8 @@ public:
     virtual float evaluate(const Vector &point) const = 0;
     inline virtual float gOffsetFunc(const float &a, const float &b) const
     {
-        float r = (b - a); // r can be whatver TODO What is r
-        float h = std::max(r - std::abs(a - b), 0.0f) / r;
+        float r = 2;
+        float h = std::max(r - std::fabs(a - b), 0.0f) / r;
         return h * h * h * r * (1.0f / 6.0f);
     };
     inline virtual float rvachev(const float &a, const float &b) const
@@ -545,7 +559,7 @@ public:
     {
         float a = left->evaluate(pt);
         float b = right->evaluate(pt);
-        return std::max(a, b) -
+        return std::max(a, b) +
                gOffsetFunc(a, b);
     }
 };
@@ -559,7 +573,7 @@ public:
     {
         float a = left->evaluate(pt);
         float b = right->evaluate(pt);
-        return std::max(a, -b) -
+        return std::max(a, -b) +
                gOffsetFunc(a, b);
     }
 };
@@ -609,43 +623,64 @@ public:
     }
 };
 
+#include <random>
+
 #include <array>
 class ErodedSdf : public Transformations
 {
     Vector m_origin;
+    ImplicitSurface *eroded_surface;
+
     float sphere_max;
     float sphere_min;
     static constexpr int num_dir = 10;
     std::array<Vector, num_dir> directions;
 
 public:
+    void sampleHemisphere(std::array<Vector, num_dir> &directions)
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+        for (int i = 0; i < num_dir; ++i)
+        {
+            float u1 = dist(gen);
+            float u2 = dist(gen);
+
+            float theta = acos(sqrt(1.0f - u1));
+            float phi = 2.0f * M_PI * u2;
+
+            float x = sin(theta) * cos(phi);
+            float y = sin(theta) * sin(phi);
+            float z = cos(theta);
+
+            directions[i] = normalize(Vector(x, y, z));
+        }
+    }
     ErodedSdf(ImplicitSurface *original, const Vector &ori)
         : Transformations(original), m_origin(ori)
     {
-        for (int i = 0; i < num_dir; ++i)
-        {
-            float theta = (float)i / num_dir * M_PI;                                          // Angle in radians
-            float phi = (float)i / num_dir * 2 * M_PI;                                        // Angle in radians
-            directions[i] = Vector(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)); // Convert to Cartesian
-        }
-    };
+        eroded_surface = original;
+        sampleHemisphere(directions);
+    }
 
     float evaluate(const Vector &pt) const override
     {
-        // Intersect
-
+        float distance = m_original->evaluate(pt);
         Vector pt_cal = pt;
+        float effect_bomb ;
 
-        ImplicitSurface *hole = m_original;
-
-        for (int i = 0; i < num_dir; ++i)
+        for (int i = 0; i < num_dir; i++)
         {
-            if (m_original->itrsctSphereTrace(m_origin, directions.at(i), pt_cal))
+
+            if (m_original->itrsctSphereTrace(m_origin, directions[i], pt_cal))
             {
-                hole = new SmoothDifference(hole, new Sphere(0.1f, pt_cal));
+                effect_bomb = length(pt - pt_cal) - 0.5;
+                distance = std::max(distance, -effect_bomb);
             }
         }
-        return hole->evaluate(pt);
+
+        return distance;
     }
 };
 
@@ -670,7 +705,7 @@ struct BVH
 
         root = buildBVH(new Boxsdf(half_size, center), 0);
     }
-    int buildBVH(Boxsdf *space, int level = 0, int max_level = 4)
+    int buildBVH(Boxsdf *space, int level = 0, int max_level = 5)
     {
         if (level >= max_level)
         {
@@ -687,24 +722,26 @@ struct BVH
 
         if (axis == 0)
         {
-            split_center.x += half_size.x / 2.0f; // Shift to the right for the left box
-            split_center2.x -= half_size.x / 2.0f;
+            half_size.x = half_size.x / 2;
+            split_center.x += half_size.x; // Shift to the right for the left box
+            split_center2.x -= half_size.x;
             ; // Shift to the right for the left box
         }
         else if (axis == 1)
         {
-
-            split_center.y += half_size.y / 2.0f;
+            half_size.y = half_size.y / 2;
+            split_center.y += half_size.y;
             ; // Shift up for the left box
-            split_center2.y -= half_size.y / 2.0f;
+            split_center2.y -= half_size.y;
             ; // Shift up for the left box
         }
         else
         {
+            half_size.z = half_size.z / 2;
 
-            split_center.z += half_size.z / 2.0f;
+            split_center.z += half_size.z;
             ; // Shift forward for the left box
-            split_center2.z -= half_size.z / 2.0f;
+            split_center2.z -= half_size.z;
             ; // Shift forward for the left box
         }
 
@@ -729,9 +766,8 @@ public:
 
     Structure_Tree(ImplicitSurface *init_root) : root(init_root)
     {
-        Bbox = Box(Vector(9, 9, 9), Vector(-9, -9, -9));
+        Bbox = Box(Vector(-8, -8, -8), Vector(8, 8, 8));
         bounding_hierarchy = BVH(Bbox);
-
     }
 
     Structure_Tree(ImplicitSurface *init_root, const Box &box) : root(init_root),
@@ -761,10 +797,10 @@ public:
     }
     float evaluate(const Vector &pt) const override
     {
-        if (evaluate_bvh(pt, bounding_hierarchy.root) > 0)
-        {
-            return 1;
-        }
+        /* if (evaluate_bvh(pt, bounding_hierarchy.root) > 0)
+         {
+             return 1;
+         }*/
         return root->evaluate(pt);
     }
 

@@ -21,6 +21,7 @@
 #include "uniforms.h"
 
 #include "texture.h"
+#include <chrono>
 
 #include <algorithm>
 
@@ -61,16 +62,24 @@ bool init()
 
     m_objet.push_back(tmp);
 
-    deformer.createBoundingGrid(m_objet[0].positions, 3);
+    std::cout << m_objet[0].normals.size() << std::endl;
+
+    // deformer.createBoundingGrid(m_objet[0].positions, 3);
     int point_id_val = deformer.control_points.size();
     point_id = Point(point_id_val, point_id_val, point_id_val);
-    //  deformer.createGrid(Point(0, 0, 0), 2, 3, 3, 3);
+    deformer.createGrid(Point(0, 0, 0), 2, 10, 10, 10);
 
     MeshDeform freee = deformer.warpMesh(m_objet[0].positions, m_objet[0].indices, m_objet[0].normals);
+    //  deformer.randomModif();
 
-    deformer.modifPoint(0,0,1,Vector(-0.2,0.0,0.2));
-    // deformer.randomModif();
+    deformer.modifPoint(0, 0, 1, Vector(-0.2, 0.0, 1.0));
+    auto start = std::chrono::high_resolution_clock::now();
+
     freee = deformer.warpMesh(m_objet[0].positions, m_objet[0].indices, m_objet[0].normals);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = end - start;
+    std::cout << "Function execution time: " << duration.count() << " ms" << std::endl;
+
     GLuint tmp_vao = create_buffers(freee.positions, freee.indices,
                                     m_objet[0].texcoords, m_objet[0].normals);
     writeMeshDeform("Freeeeeee.obj", freee);
@@ -122,7 +131,7 @@ float dist_an_z = 0;
 float pitch = 0.0f;
 float yaw = 0.0f;
 
-//TODO MAkeshift solution till the app is build more solidly around interaction
+// TODO MAkeshift solution till the app is build more solidly around interaction
 void input()
 {
     // Classic variable
@@ -234,11 +243,11 @@ void draw()
     glViewport(0, 0, 1024, 576);
     ////////////////////////////////////////////////////////////
     // Switching the point
-    count = count +1 %20;
-    //deformer.randomModif();
-    //deformer.warpMesh(m_objet[0].positions, m_objet[0].indices, m_objet[0].normals);
+    count = count + 1 % 20;
+    // deformer.randomModif();
+    // deformer.warpMesh(m_objet[0].positions, m_objet[0].indices, m_objet[0].normals);
 
-    //update_buffers(m_vao[0], m_objet[0].positions, m_objet[0].indices);
+    // update_buffers(m_vao[0], m_objet[0].positions, m_objet[0].indices);
     /////////////////////////////////////////////////////////////
     // Uniform
     program_uniform(m_programs[0], "modelMatrix", model);
@@ -276,7 +285,7 @@ int main(int argc, char **argv)
     Context context = create_context(window);
 
     // etat openGL de base / par defaut
-    glClearColor(0.1, 0.1, 0.1, 1);
+    glClearColor(0.2, 0.4, 0.4, 1);
     glClearDepth(1);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);

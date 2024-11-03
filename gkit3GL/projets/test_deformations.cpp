@@ -36,30 +36,26 @@ bool init()
 
     MeshIOData tmp;
 
-
     std::vector<Point> vertices;
     std::vector<unsigned> faces;
     std::vector<Vector> normals;
 
-    /*if (!read_meshio_data("./data/hearthspring.obj", tmp))
+    if (!read_meshio_data("./moe/az/a1.obj", tmp))
     {
         return false;
-    }*/
+    }
 
-    //Prefer this as the other function may change some data
-    read_indexed_positions("./data/hearthspring.obj",vertices, faces);
-    tmp.indices = faces;
-    tmp.positions = vertices;
-
+    // Prefer this as the other function may change some data
+  
     m_objet.push_back(tmp);
-
     
+    MeshDeform bezier_deform= TwistDeform::twistMesh(m_objet[0].positions,m_objet[0].indices,m_objet[0].normals,0,350);
+   /* MeshDeform bezier_deform = LocalDeformations::onSphere::warpMesh(m_objet[0].positions, m_objet[0].indices, m_objet[0].normals,
+                                                                     Vector(0, 0.1, 0), m_objet[0].positions[0], 0.1);*/
 
 
-    MeshDeform bezier_deform= TwistDeform::twistMesh(m_objet[0].positions,m_objet[0].indices,m_objet[0].normals,0,5);
-    /*MeshDeform bezier_deform = LocalDeformations::onSphere::warpMesh(m_objet[0].positions, m_objet[0].indices, m_objet[0].normals,
-                                                                      Vector(0, 1, 0), m_objet[0].positions[0], 0.2);*/
-    writeMeshDeform("DeformedMesh.obj",bezier_deform);
+
+    writeMeshDeform("DeformedMesh.obj", bezier_deform);
 
     GLuint tmp_vao = create_buffers(bezier_deform.positions, bezier_deform.indices,
                                     m_objet[0].texcoords, bezier_deform.normals);

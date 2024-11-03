@@ -31,22 +31,29 @@ std::vector<unsigned int> grid_faces;
 
 BezierPatches patch;
 unsigned int textureID = 0;
+#include <chrono>
 
 bool init()
 {
     MeshIOData tmp;
     BezierPatches patch;
+    auto start = std::chrono::high_resolution_clock::now();
 
     // Create a patch of arg * arg control points
-    patch.create_patch(3, 3);
+    patch.create_patch(5, 5);
 
     std::vector<Vector> vertices;
     std::vector<Vector> faces;
     std::vector<Vector> normals;
-
-    patch.convert_to_mesh(30, vertices, faces, normals);
+    // 10 30 100
+    patch.convert_to_mesh(50, vertices, faces, normals);
 
     patch.writeMeshBezier("./bezier_patch.obj", vertices, faces, normals);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = end - start;
+    std::cout << "Function execution time: " << duration.count() << " ms" << std::endl;
+
+    std::cout << "Saved mesh creation" << std::endl;
 
     patch.returnPointGrid(grid_vert, grid_faces);
 

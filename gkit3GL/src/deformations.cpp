@@ -160,7 +160,7 @@ void FreeFormDeform::randomModif()
     // Random number generator setup
     std::random_device rd;
     std::mt19937 engine(rd());
-    std::uniform_real_distribution<float> dist(0.01, 0.1);
+    std::uniform_real_distribution<float> dist(0.01, 0.3);
 
     int counter = 0;
     // Iterate through the 3D vector and translate each point
@@ -171,19 +171,11 @@ void FreeFormDeform::randomModif()
             for (auto &point : row)
             {
                 counter++;
-                if (counter % 2 == 0)
-                {
+              
                     point.x += dist(engine);
-                    // point.y += dist(engine);
-                    point.z -= dist(engine);
-                }
-                else
-                {
-                    point.z += dist(engine);
-                    point.x -= dist(engine);
-                }
+                    point.y += dist(engine);
+                     point.z -= dist(engine);
             }
-            break;
         }
     }
 }
@@ -368,6 +360,10 @@ namespace LocalDeformations
             }
             std::copy(normals.begin(), normals.end(),
                       std::back_inserter(new_mesh.normals));
+            std::cout<<normals.size()<<std::endl;
+            std::cout<<normals.size()<<std::endl;
+            std::cout<<normals.size()<<std::endl;
+
 
             std::copy(indices.begin(), indices.end(),
                       std::back_inserter(new_mesh.indices));
@@ -396,6 +392,9 @@ bool writeMeshDeform(const char *filename, const MeshDeform &deformed)
     }
 
     // Write normals if present
+    std::cout<<"normals"<<std::endl;
+    std::cout<<deformed.normals.size()<<std::endl;
+
     if (deformed.normals.size() > 0)
     {
         for (const auto &normal : deformed.normals)

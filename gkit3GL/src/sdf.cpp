@@ -8,9 +8,9 @@ bool ImplicitSurface::inside(const Vector &point) const
 
  inline Vector ImplicitSurface::derivateapprox(const Vector &point) const
 {
-    float dfx = evaluate(Vector(point.x + eps, point.y, point.z) - Vector(point.x - eps, point.y, point.z));
-    float dfy = evaluate(Vector(point.x, point.y + eps, point.z) - Vector(point.x, point.y - eps, point.z));
-    float dfz = evaluate(Vector(point.x, point.y, point.z + eps) - Vector(point.x, point.y, point.z - eps));
+    float dfx = evaluate(Vector(point.x + eps, point.y, point.z)) - evaluate(Vector(point.x - eps, point.y, point.z));
+    float dfy = evaluate(Vector(point.x, point.y + eps, point.z)) - evaluate(Vector(point.x, point.y - eps, point.z));
+    float dfz = evaluate(Vector(point.x, point.y, point.z + eps)) - evaluate(Vector(point.x, point.y, point.z - eps));
     return Vector(dfx, dfy, dfz);
 }
 Vector ImplicitSurface::gradient(const Vector &point) const
@@ -170,8 +170,8 @@ void ImplicitSurface::Polygonize(int n, Mesh_imp &g, const Box &box, const doubl
                 // if (((b[i*ny + j] < 0.0) && (b[i*ny + (j + 1)] >= 0.0)) || ((b[i*ny + j] >= 0.0) && (b[i*ny + (j + 1)] < 0.0)))
                 if (!((b[i * ny + j] < 0.0) == !(b[i * ny + (j + 1)] >= 0.0)))
                 {
-                    vertex.emplace_back(Dichotomy(v[i * ny + j], v[i * ny + (j + 1)], b[i * ny + j], b[i * ny + (j + 1)], d.y, epsilon));
-                    normal.emplace_back(this->normal(vertex.back()));
+                    vertex.push_back(Dichotomy(v[i * ny + j], v[i * ny + (j + 1)], b[i * ny + j], b[i * ny + (j + 1)], d.y, epsilon));
+                    normal.push_back(this->normal(vertex.back()));
                     eby[i * ny + j] = nv;
                     nv++;
                 }
@@ -186,8 +186,8 @@ void ImplicitSurface::Polygonize(int n, Mesh_imp &g, const Box &box, const doubl
                 // if ((a[i*ny + j] < 0.0) && (b[i*ny + j] >= 0.0) || (a[i*ny + j] >= 0.0) && (b[i*ny + j] < 0.0))
                 if (!((a[i * ny + j] < 0.0) == !(b[i * ny + j] >= 0.0)))
                 {
-                    vertex.emplace_back(Dichotomy(u[i * ny + j], v[i * ny + j], a[i * ny + j], b[i * ny + j], d.z, epsilon));
-                    normal.emplace_back(this->normal(vertex.back()));
+                    vertex.push_back(Dichotomy(u[i * ny + j], v[i * ny + j], a[i * ny + j], b[i * ny + j], d.z, epsilon));
+                    normal.push_back(this->normal(vertex.back()));
                     ez[i * ny + j] = nv;
                     nv++;
                 }

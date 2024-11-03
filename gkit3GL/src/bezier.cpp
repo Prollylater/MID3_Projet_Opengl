@@ -15,6 +15,28 @@ void BezierPatches::create_patch(uint8_t degree_m, uint8_t degree_n)
 {
 
     control_point.resize(degree_m);
+    //https://mathcurve.com/courbes3d/noeuds/noeudenhuit.shtml
+    /*
+    
+    for (uint8_t m = 0; m < degree_m; m++)
+    {
+        control_point[m].resize(degree_n);
+        for (uint8_t n = 0; n < degree_n; n++)
+        {
+
+            // Define a parameter t based on m and n
+            float t = static_cast<float>(m*5 + n*5) * 0.1f; // Scale as needed
+
+            // Compute x, y, and z based on the parametric equations
+            float x = 7 * std::cos(t) + 5 * std::cos(3 * t);
+            float y = 3 * std::sin(t) + 5 * std::sin(3 * t);
+            float z = (5 * t) / 2 - std::sin(3 * t) + std::sin(4 * t) - std::sin(6 * t);
+
+            // Scale the coordinates to match your requirements
+            control_point[m][n] = {x / 5, y / 5, z / 5};
+        }
+    }
+  
     for (uint8_t m = 0; m < degree_m; m++)
     {
         control_point[m].resize(degree_n);
@@ -28,22 +50,23 @@ void BezierPatches::create_patch(uint8_t degree_m, uint8_t degree_n)
             control_point[m][n] = {x/5, y/5, z/5};
         }
     }
-    /*
+*/
+
+    
     float z = 0;
     for (float m = 0; m < degree_m; m++)
     {
         control_point[m].resize(degree_n);
         for (float n = 0; n < degree_n; n++)
         {
-            if (n == 1 & m == 1)
+            if (n == 2 & m == 2)
             {
-                z = 1;
+                z = 2;
             }
             control_point[m][n] = {(m) / 5, z, (n) / 5};
             z = 0;
         }
     }
-    */
 }
 
 Vector BezierPatches::compute_partial_derivU(float u, float v)
@@ -54,12 +77,11 @@ Vector BezierPatches::compute_partial_derivU(float u, float v)
     for (int i = 0; i < m - 1; i++)
     {
         int n = control_point[i].size();
-        float bernstein_u = compute_bernst_basis(m - 1, u, i);
+        float bernstein_u = compute_bernst_basis(m - 2, u, i);
 
         for (int j = 0; j < control_point[i].size(); j++)
         {
-            //                float bernstein_v = compute_bernst_basis_deriv(n, v, j);
-            float bernstein_v = compute_bernst_basis(n, v, j);
+            float bernstein_v = compute_bernst_basis(n - 1, v, j);
             pu = pu + m * (control_point[i + 1][j] - control_point[i][j]) * bernstein_u * bernstein_v;
         }
     }
@@ -76,12 +98,10 @@ Vector BezierPatches::compute_partial_derivV(float u, float v)
     for (int i = 0; i < m; i++)
     {
         int n = control_point[i].size();
-        float bernstein_u = compute_bernst_basis(m, u, i);
+        float bernstein_u = compute_bernst_basis(m - 1, u, i);
         for (int j = 0; j < n - 1; j++)
         {
-            // float bernstein_v = compute_bernst_basis_deriv(n-1, v, j);
-
-            float bernstein_v = compute_bernst_basis(n - 1, v, j);
+            float bernstein_v = compute_bernst_basis(n - 2, v, j);
             pv = pv + m * (control_point[i][j + 1] - control_point[i][j]) * bernstein_u * bernstein_v;
         }
     }
@@ -102,12 +122,8 @@ Vector BezierPatches::compute_point(float u, float v)
         {
             float bernstein_v = compute_bernst_basis(n - 1, v, j);
             p_uv = p_uv + (control_point[i][j] * bernstein_u * bernstein_v);
-            // std::cout<<"NEwround"<< p_uv<< " " <<u<< " "<<v<< std::endl;
-            // std::cout<<"BErny"<< bernstein_u<< " " <<bernstein_v<< std::endl;
-            // counter++;
         }
     }
-    // std::cout<<"Iteration"<< counter<< " for " <<m<< " "<<n<< std::endl;
 
     return p_uv;
 }
@@ -136,7 +152,6 @@ void BezierPatches::convert_to_mesh(int nb_vertex, std::vector<Vector> &vertices
         {
 
             float v = j * step;
-            std::cout << "Computing " << i << " " << j << std::endl;
             vertices[i * nb_vertex + j] = compute_point(u, v);
             Vector partialU = compute_partial_derivU(u, v);
             Vector partialV = compute_partial_derivV(u, v);
@@ -150,16 +165,10 @@ void BezierPatches::convert_to_mesh(int nb_vertex, std::vector<Vector> &vertices
             {
                 normals[i * nb_vertex + j] = Vector(0, 0, 0); // Default normal or handle error
             }
-            if (std::isnan(normals[i * nb_vertex + j].x))
-            {
-                std::cout << "weird point at it " << i << " and j " << j << std::endl;
-            }
         }
     }
-
-    std::cout << "Stitching the face" << std::endl;
-
-    // Get Topologie
+    // https://mathcurve.com/courbes3d/noeuds/noeudenhuit.shtml
+    //  Get Topologie
     faces.reserve(2 * ((nb_vertex - 1) * (nb_vertex - 1)));
     for (int i = 1; i < nb_vertex - 1; i++)
     {
@@ -181,9 +190,9 @@ void BezierPatches::returnPointGrid(std::vector<Point> &vertices,
     {
         for (int j = 0; j < control_point[i].size() - 1; j++)
         {
-            vertices.emplace_back(2 * control_point[i][j].x, 2 * control_point[i][j].y, 2 * control_point[i][j].z);
+            vertices.emplace_back(1.2 * control_point[i][j].x, 0.5  * control_point[i][j].y, 1.2  * control_point[i][j].z);
         }
-    } 
+    }
 
     int rows = control_point[0].size();
     int cols = control_point.size();
@@ -192,7 +201,7 @@ void BezierPatches::returnPointGrid(std::vector<Point> &vertices,
     for (int i = 0; i < cols - 1; ++i)
     {
         for (int j = 0; j < rows - 1; ++j)
-        { // TODO: Precompute value that are "common"
+        {                                           // TODO: Precompute value that are "common"
             faces.emplace_back(j * cols + i);       // Top left
             faces.emplace_back((j + 1) * cols + i); // Bottom left
             faces.emplace_back(j * cols + i + 1);   // Top right

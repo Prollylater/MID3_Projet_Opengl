@@ -37,18 +37,9 @@ bool init()
   //////////////////////////////////////////////////CSG DEF
 
   std::cout << "Creating NOde" << std::endl;
-  /*ImplicitSurface *node = new SmoothUnion(new Cone(1.0f, Vector(0, 0, 0)),
-                                          (new Torus(1.0f, 0.6f)));
-  */ std::cout << "Sculpture creation" << std::endl;
-  // Structure_Tree sculpture(new Intersection(new Sphere(0.9f, Vector(0, 0, 0)), new Sphere(0.9f, Vector(0, 1, 1))));
-  //  Structure_Tree sculpture(new Sphere(0.5f,Vector(0,0,0)));
-  //   Structure_Tree sculpture(new DifferenceRvachev(new Sphere(0.5f,Vector(0,0,0)) ,new Sphere(0.5f,Vector(0,0.3,0))));
-  //  Structure_Tree sculpture(new Torus(0.2f,0.3f));
-  //  Structure_Tree sculpture(new Capsule(1.0f,Vector(0,0,0),Vector(0,1,0)));
-  //  Structure_Tree sculpture(new Rhombus(0.4, 0.4, 0.05, 0.05,Vector(0,0,0)));
+  std::cout << "Sculpture creation" << std::endl;
 
   // VIOLET
-
   // Violet Leaf
   // ImplicitSurface *leaf_v = new Bend(new Rotation_trs(new Rhombus(2.5, 0.4, 0.1, 1.4, Vector(0, 0, 0)),5,2 ), 0.05,0);
   //  ImplicitSurface *leaf_v = new Rotation_trs(new Rhombus(2.3, 0.4, 0.1, 1.4, Vector(0, 0, 0)), 2, 2);
@@ -95,7 +86,7 @@ bool init()
 
   // PINK
   ImplicitSurface *structure_p1 = new TranslationSdf(new Cone(2.7, 0.9, Vector(0, 0, 0)), Vector(0.0, 2.0, 0.0));
-  ImplicitSurface *structure_p2 = new TranslationSdf(new Rotation_trs(new Cone(1.2, 0.9, Vector(0, 0, 0)), 180, 2), Vector(0.0, -2.0, 0.0));
+  ImplicitSurface *structure_p2 = new TranslationSdf(new Rotation_trs(new Cone(1.0, 0.9, Vector(0, 0, 0)), 180, 2), Vector(0.0, -2.0, 0.0));
   ImplicitSurface *structure_p3 = new TranslationSdf(new Octo(0.9), Vector(0.0, 0.0, 0.0));
   ImplicitSurface *surface_p = new Union(new Union(new Bend(structure_p1, 0.2, 0), structure_p2), structure_p3);
   ImplicitSurface *surface_p_in_scne = new TranslationSdf(surface_p, Vector(0.0, 4.0, 1.1));
@@ -116,13 +107,12 @@ bool init()
 
   // RED
   // ImplicitSurface *structure_r = new Difference( new Rhombus(0.6, 0.8, 0.1, 0.4, Vector(0, 0, 0)) , leaf_i);// Double triangle //Essentially when  Lb is biggger// Strertch with raising 4.0
-  /*
-    ImplicitSurface *structure_r1 = new Displacement_sdf(new Capsule(0.5f, Vector(0, 0, 0), Vector(0, 1.1, 0)));
-    ImplicitSurface *structure_r2 = new Union(new Capsule(0.81f, Vector(0, -0.5, 0), Vector(0, 1.8, 0)), structure_r1);
-    ImplicitSurface *structure_r3 = new Difference(structure_r2, new Capsule(0.7f, Vector(0, 0, 0), Vector(0, 1.8, 0)));
-    ImplicitSurface *structure_r3_in_scene = new TranslationSdf(structure_r3, Vector(0.0, 1.50, 1.1));
+  /*ImplicitSurface *structure_r1 = new Displacement_sdf(new Capsule(0.5f, Vector(0, 0, 0), Vector(0, 1.1, 0)));
+  ImplicitSurface *structure_r2 = new Union(new Capsule(0.81f, Vector(0, -0.5, 0), Vector(0, 1.8, 0)), structure_r1);
+  ImplicitSurface *structure_r3 = new Difference(structure_r2, new Capsule(0.7f, Vector(0, 0, 0), Vector(0, 1.8, 0)));
+  ImplicitSurface *structure_r3_in_scene = new TranslationSdf(structure_r3, Vector(0.0, 1.50, 1.1));
 
-    */
+  */
 
   ImplicitSurface *structure_r1 = new Displacement_sdf(new Capsule(0.5f, Vector(0, 0, 0), Vector(0, 1.1, 0)));
   ImplicitSurface *structure_r2 = new Union(new Capsule(0.8f, Vector(0, -0.5, 0), Vector(0, 1.8, 0)), structure_r1);
@@ -131,30 +121,29 @@ bool init()
   //  RED
 
   // ROOOT
-  /*
-  ImplicitSurface *root = new Bend(new Rotation_trs( new Capsule(0.2f, Vector(0, 0, 0), Vector(0, 6.0, 0)), 80,2), 0.2, 1) ;
-  ImplicitSurface *rootb =  new Rotation_trs(root, 180,1);
-  */
-  ImplicitSurface *root = new Bend(new Rotation_trs(new Capsule(0.2f, Vector(0, 0, 0), Vector(0, 6.0, 0)), 120, 2), 0.12, 1);
-  ImplicitSurface *rootb = new TranslationSdf(new Bend(new Rotation_trs(root, 180, 1), 0.12, 2), Vector(0.1, 0.0, 0.4));
-  ImplicitSurface *rootc = new Bend(new Rotation_trs(rootb, 65, 1), 0.12, 0);
-  ImplicitSurface *rootd = new Bend(new Rotation_trs(rootc, 45, 0), -0.10, 1);
-  ImplicitSurface *roots = new TranslationSdf(new Union(new Union(root, new Union(rootb, rootc)), rootd), Vector(-0.2, -0.5, 1.2));
 
+  // ImplicitSurface *roots = new Bend(new Rotation_trs(new Capsule(0.3f, Vector(0, 0, 0), Vector(0, 6.0, 0)), 120, 2), 0.2, 1);
+
+  /*  ImplicitSurface *root = new Bend(new Rotation_trs(new Capsule(0.2f, Vector(0, 0, 0), Vector(0, 6.0, 0)), 120, 2), 0.12, 1);
+ImplicitSurface *rootb = new TranslationSdf(new Bend(new Rotation_trs(root, 180, 1), 0.12, 2), Vector(0.1, 0.0, 0.4));
+ImplicitSurface *rootc = new Bend(new Rotation_trs(rootb, 65, 1), 0.12, 0);
+ImplicitSurface *rootd = new Bend(new Rotation_trs(rootc, 45, 0), -0.10, 1);
+ImplicitSurface *roots = new TranslationSdf(new Union(new Union(root, new Union(rootb, rootc)), rootd), Vector(-0.2, -0.5, 1.2));
+*/
   // ROOT
 
   ImplicitSurface *linker_leaf = new TranslationSdf(new Union(surface_g_move, surface_y_moved), Vector(0.5, 0.0, 0));
-  ImplicitSurface *leafs_final = new Union(new Union(surface_i, surface_v), roots);
+  ImplicitSurface *leafs_final = (new Union(surface_i, surface_v));
   ImplicitSurface *center_pistil = new TranslationSdf((new Union(surface_p_in_scne, structure_r3_in_scene)), Vector(0.0, 0.4, 0.0));
   Structure_Tree sculpture(new Union(new Union(leafs_final, center_pistil), linker_leaf));
 
-  // PINK
-  // ImplicitSurface *support_p_cone = new TranslationSdf(new Rotation_trs(new Cone(1.0, 0.2, Vector(0.0, 0.0, 0.0)), 180, 2), Vector(0.0, -1.2f /*Height*/, 0.0));
-
-  // new Difference(new Octo(1.0),new TranslationSdf(new Boxsdf(1.0,Vector(0.0, 0.0, 0.0)), Vector(0.0,0.5f,0.0f) Pretty cool
   std::cout << "Mesh creation" << std::endl;
+  // 766 ms 149ms
+  // 2476 ms 386ms
+
   Mesh_imp mesh;
   auto start = std::chrono::high_resolution_clock::now();
+
   sculpture.Polygonize(100, mesh, sculpture.Bbox, eps);
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double, std::milli> duration = end - start;
