@@ -2,6 +2,7 @@ dofile "GL.lua"
 
  -- description des projets		 
 projects = {
+	"abcd",
 	"cubeworld"
     ,"test_bezier"
     ,"test_deformations"

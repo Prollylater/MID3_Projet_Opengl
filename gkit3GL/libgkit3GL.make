@@ -71,12 +71,18 @@ OBJECTS := \
 	$(OBJDIR)/mat.o \
 	$(OBJDIR)/mesh_io.o \
 	$(OBJDIR)/vec.o \
+	$(OBJDIR)/app.o \
+	$(OBJDIR)/app_camera.o \
 	$(OBJDIR)/bezier.o \
+	$(OBJDIR)/box.o \
 	$(OBJDIR)/buffers.o \
 	$(OBJDIR)/default_program.o \
 	$(OBJDIR)/deformations.o \
 	$(OBJDIR)/draw.o \
+	$(OBJDIR)/implicits.o \
+	$(OBJDIR)/orbiter.o \
 	$(OBJDIR)/program.o \
+	$(OBJDIR)/sdf.o \
 	$(OBJDIR)/texture.o \
 	$(OBJDIR)/uniforms.o \
 	$(OBJDIR)/window.o \
@@ -156,7 +162,16 @@ $(OBJDIR)/mesh_io.o: ../src/mesh_io.cpp
 $(OBJDIR)/vec.o: ../src/vec.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/app.o: src/app.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/app_camera.o: src/app_camera.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/bezier.o: src/bezier.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/box.o: src/box.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/buffers.o: src/buffers.cpp
@@ -171,7 +186,16 @@ $(OBJDIR)/deformations.o: src/deformations.cpp
 $(OBJDIR)/draw.o: src/draw.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/implicits.o: src/implicits.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/orbiter.o: src/orbiter.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/program.o: src/program.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/sdf.o: src/sdf.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/texture.o: src/texture.cpp

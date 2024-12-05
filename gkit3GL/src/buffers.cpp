@@ -38,7 +38,6 @@ GLuint create_buffers(const std::vector<Point> &positions)
     return vao;
 }
 
-
 GLuint create_buffers(const std::vector<Point> &positions, const std::vector<unsigned> &indices,
                       const std::vector<Point> &texcoords, const std::vector<Vector> &normals)
 {
@@ -123,59 +122,7 @@ GLuint create_buffers_instancesT(const std::vector<Point> &positions, const std:
 
     return vao;
 }
-GLuint create_buffers_instancesV(GLuint &buffer_translations, const std::vector<Point> &positions, const std::vector<unsigned> &indices,
-                                 const std::vector<Point> &texcoords, const std::vector<Vector> &normals, const std::vector<Vector> &translations, const std::vector<unsigned> &texture_id)
-{
-    assert(positions.size());
 
-    GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    GLuint buffer = create_buffer(GL_ARRAY_BUFFER, positions);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
-    glEnableVertexAttribArray(0);
-
-    if (texcoords.size() && texcoords.size() == positions.size())
-    {
-
-        GLuint buffer = create_buffer(GL_ARRAY_BUFFER, texcoords);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
-        glEnableVertexAttribArray(1);
-    }
-    if (normals.size() && normals.size() == positions.size())
-    {
-        GLuint buffer = create_buffer(GL_ARRAY_BUFFER, normals);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
-        glEnableVertexAttribArray(2);
-    }
-    // Instance array
-    // As much translations as there is vertices i g
-    if (translations.size())
-    {
-        buffer_translations = create_buffer_dynamic(GL_ARRAY_BUFFER, translations);
-        glEnableVertexAttribArray(3);
-        // Notice how we pass a vec4 (4 floats) and specify the offset for each column of the matrix
-        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
-        glVertexAttribDivisor(3, 1); // Update per instance
-    }
-    if (texture_id.size())
-    {
-        GLuint buffer = create_buffer(GL_ARRAY_BUFFER, texture_id);
-        glEnableVertexAttribArray(4);
-        //glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, 0, (const void *)0);
-        glVertexAttribPointer(4, 1, GL_UNSIGNED_INT, GL_FALSE, 0, (const void *)0);
-        glVertexAttribDivisor(4, 1); // Update per instance
-   
-    }
-    if (indices.size())
-    {
-        GLuint buffer = create_buffer(GL_ELEMENT_ARRAY_BUFFER, indices);
-    }
-    glBindVertexArray(0);
-
-    return vao;
-}
 GLuint create_buffers_instancesV(GLuint &buffer_translations, const std::vector<Point> &positions, const std::vector<unsigned> &indices,
                                  const std::vector<Point> &texcoords, const std::vector<Vector> &normals, const std::vector<Vector> &translations)
 {
@@ -221,6 +168,52 @@ GLuint create_buffers_instancesV(GLuint &buffer_translations, const std::vector<
     return vao;
 }
 
+GLuint create_buffers_instancesV(GLuint &buffer_translations, const std::vector<Point> &positions, const std::vector<unsigned> &indices,
+                                 const std::vector<Point> &texcoords, const std::vector<Vector> &normals, const std::vector<vec4> &translations)
+{
+    assert(positions.size());
+    GLuint vao = 0;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    GLuint buffer = create_buffer(GL_ARRAY_BUFFER, positions);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
+    glEnableVertexAttribArray(0);
+
+    if (texcoords.size() && texcoords.size() == positions.size())
+    {
+
+        GLuint buffer = create_buffer(GL_ARRAY_BUFFER, texcoords);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
+        glEnableVertexAttribArray(1);
+    }
+    if (normals.size() && normals.size() == positions.size())
+    {
+        GLuint buffer = create_buffer(GL_ARRAY_BUFFER, normals);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
+        glEnableVertexAttribArray(2);
+    }
+    // Instance array
+    // As much translations as there is vertices i g
+
+    if (translations.size())
+    {
+        buffer_translations = create_buffer_dynamic(GL_ARRAY_BUFFER, translations);
+
+        glEnableVertexAttribArray(3);
+        // Notice how we pass a vec4 (4 floats) and specify the offset for each column of the matrix
+        glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 0, (const void *)0);
+        glVertexAttribDivisor(3, 1); // Update per instance
+    }
+
+    if (indices.size())
+    {
+        GLuint buffer = create_buffer(GL_ELEMENT_ARRAY_BUFFER, indices);
+    }
+    glBindVertexArray(0);
+
+    return vao;
+}
 template <typename T>
 static void update_buffer(const int index, const GLenum target, const std::vector<T> &data)
 {

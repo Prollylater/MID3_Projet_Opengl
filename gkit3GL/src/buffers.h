@@ -13,8 +13,12 @@ GLuint create_buffers(const std::vector<Point> &positions, const std::vector<uns
 
 GLuint create_buffers_instancesV( GLuint& buffer_translations ,const std::vector<Point> &positions, const std::vector<unsigned> &indices = {},
                                  const std::vector<Point> &texcoords = {}, const std::vector<Vector> &normals = {}, const std::vector<Vector> &translations = {});
+
 GLuint create_buffers_instancesV(GLuint &buffer_translations, const std::vector<Point> &positions, const std::vector<unsigned> &indices,
-                                 const std::vector<Point> &texcoords, const std::vector<Vector> &normals, const std::vector<Vector> &translations,const std::vector<unsigned> &texture_id);
+                                 const std::vector<Point> &texcoords, const std::vector<Vector> &normals, const std::vector<vec4> &translations);
+
+
+
 GLuint create_buffers_instancesT(const std::vector<Point> &positions, const std::vector<unsigned> &indices = {},
                                  const std::vector<Point> &texcoords = {}, const std::vector<Vector> &normals = {}, const std::vector<Transform> &translations = {});
 

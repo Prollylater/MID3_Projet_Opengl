@@ -170,7 +170,7 @@ GLuint read_texture(const int unit,
     return texture;
 }
 GLuint read_texture_array(const int unit,
-                          const std::vector<const char *>& filenames,
+                          const std::vector<const char *> &filenames,
                           const GLenum texel_type)
 {
     stbi_set_flip_vertically_on_load(1);
@@ -209,8 +209,7 @@ GLuint read_texture_array(const int unit,
     // glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 1);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, temp);
+    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, 1, GL_RGB, GL_UNSIGNED_BYTE, temp);
     stbi_image_free(temp);
     for (int i = 1; i < filenames.size(); i++)
     {
@@ -221,13 +220,10 @@ GLuint read_texture_array(const int unit,
             printf("[error] loading '%s'...\n", filenames[i]);
             return 0;
         }
-        else{
             printf("Loaded '%s'...\n", filenames[i]);
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
 
-        }
-        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-        //glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+        // glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
         stbi_image_free(data);
     }
 

@@ -4,13 +4,11 @@
 #include "vec.h"
 #include "mat.h"
 
-
-
 // Struct Frustum_Plane
 
-struct Region 
+struct Region
 {
-  
+
     std::array<Point, 8> corners;
 
     Region(const Point &corn_max, const Point &corn_min)
@@ -27,7 +25,6 @@ struct Region
     };
 };
 
-  
 struct Plane
 {
     Vector normal;
@@ -35,16 +32,40 @@ struct Plane
 
     Plane() = default;
 
-
     Plane(const vec3 &normal, float distance)
         : normal(normal), distance(distance) {}
 };
 
+/*
+bool insideFrustum(Region &regions, const Frustum &frustum)
+{
+    // Assume Frustum has six planes, with each plane as vec4 (a, b, c, d) for ax + by + cz + d = 0
+    for (const auto& plane : frustum.planes) {
+        int outside_count = 0;
+
+        // Count corners outside this plane
+        for (const auto& corner : regions.corners) {
+            vec4 point(corner, 1.0f);
+            if (dot(plane, point) < 0) {
+                outside_count++;
+            }
+        }
+
+        // If all corners are outside one plane, region is fully outside the frustum
+        if (outside_count == regions.corners.size()) {
+            return false;
+        }
+    }
+
+    // If not fully outside any plane, region intersects or is inside the frustum
+    return true;
+}
+*/
+
 struct Frustrum
 {
- 
-    std::array<Plane, 6> planes;
 
+    std::array<Plane, 6> planes;
 
     Frustrum(const Plane &top, const Plane &bottom, const Plane &right, const Plane &left,
              const Plane &far, const Plane &near)
@@ -104,8 +125,9 @@ Frustrum createFrustumplane(Transform projection)
     far.normal.x = projection[0].z - projection[0].y;
     far.normal.y = projection[1].z - projection[1].y;
     far.normal.z = projection[2].z - projection[2].y;
-    far.normal = normalize(far.normal);
     far.distance = projection[3].z - projection[3].y;
+
+    far.normal = normalize(far.normal);
 
     return Frustrum(top, bottom, right, left, far, near);
 }
@@ -131,22 +153,21 @@ bool insideFrustum(Region &regions, const Frustrum &frust)
 
 bool insideFrustum(Region &regions, const Transform &mvp)
 {
-    // check box outside/inside of frustum
-
-    bool inside = false;
+    // Check if any corner is inside the frustum
     for (int j = 0; j < regions.corners.size(); j++)
     {
-        vec4 curr_corner = vec4(regions.corners.at(j));
-        vec4 corner_clip_space = mvp(regions.corners.at(j));
-        //  std::cout << "Testing the point" << std::endl;
-        // std::cout << corner_clip_space.x << " " << corner_clip_space.y << " " << corner_clip_space.z << " " << corner_clip_space.w << std::endl;
-        // A single corner in is good enough for now
-        inside = inside || ((corner_clip_space.x > -corner_clip_space.w && corner_clip_space.x < corner_clip_space.w) &&
-                               (corner_clip_space.y > -corner_clip_space.w && corner_clip_space.y <= corner_clip_space.w) &&
-                               (corner_clip_space.z > -corner_clip_space.w && corner_clip_space.z < corner_clip_space.w));
-        // corner_clip_space.z > -corner_clip_space.w  if we don't want to reject element only behind the plane
-        // Last one is suspicions. 0 or -corner_clip_space.w
+        vec4 curr_corner = vec4(regions.corners.at(j)); 
+        vec4 corner_clip_space = mvp(curr_corner); // Apply MVP matrix
+
+        // Check if the corner is inside all six frustum planes
+        bool is_inside = (corner_clip_space.x >= -corner_clip_space.w && corner_clip_space.x <= corner_clip_space.w) && // Left & Right
+                         (corner_clip_space.y >= -corner_clip_space.w && corner_clip_space.y <= corner_clip_space.w) && // Top & Bottom
+                         (corner_clip_space.z >= -corner_clip_space.w*2 && corner_clip_space.z <= corner_clip_space.w);   // Near & Far
+
+        if (is_inside) {
+            // Early exit 
+            return true;
+        }
     }
-    
-    return inside;
+    return false;
 }

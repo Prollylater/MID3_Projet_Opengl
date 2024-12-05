@@ -120,31 +120,17 @@ bool init()
   ImplicitSurface *structure_r3_in_scene = new TranslationSdf(structure_r3, Vector(0.0, 1.40, 1.1));
   //  RED
 
-  // ROOOT
-
-  // ImplicitSurface *roots = new Bend(new Rotation_trs(new Capsule(0.3f, Vector(0, 0, 0), Vector(0, 6.0, 0)), 120, 2), 0.2, 1);
-
-  /*  ImplicitSurface *root = new Bend(new Rotation_trs(new Capsule(0.2f, Vector(0, 0, 0), Vector(0, 6.0, 0)), 120, 2), 0.12, 1);
-ImplicitSurface *rootb = new TranslationSdf(new Bend(new Rotation_trs(root, 180, 1), 0.12, 2), Vector(0.1, 0.0, 0.4));
-ImplicitSurface *rootc = new Bend(new Rotation_trs(rootb, 65, 1), 0.12, 0);
-ImplicitSurface *rootd = new Bend(new Rotation_trs(rootc, 45, 0), -0.10, 1);
-ImplicitSurface *roots = new TranslationSdf(new Union(new Union(root, new Union(rootb, rootc)), rootd), Vector(-0.2, -0.5, 1.2));
-*/
-  // ROOT
-
-  ImplicitSurface *linker_leaf = new TranslationSdf(new Union(surface_g_move, surface_y_moved), Vector(0.5, 0.0, 0));
+  ImplicitSurface *linker_leaf = new TranslationSdf(new SmoothUnion(surface_g_move, surface_y_moved), Vector(0.5, 0.0, 0));
   ImplicitSurface *leafs_final = (new Union(surface_i, surface_v));
   ImplicitSurface *center_pistil = new TranslationSdf((new Union(surface_p_in_scne, structure_r3_in_scene)), Vector(0.0, 0.4, 0.0));
   Structure_Tree sculpture(new Union(new Union(leafs_final, center_pistil), linker_leaf));
 
   std::cout << "Mesh creation" << std::endl;
-  // 766 ms 149ms
-  // 2476 ms 386ms
 
   Mesh_imp mesh;
   auto start = std::chrono::high_resolution_clock::now();
 
-  sculpture.Polygonize(100, mesh, sculpture.Bbox, eps);
+  sculpture.Polygonize(200, mesh, sculpture.Bbox, eps);
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double, std::milli> duration = end - start;
   std::cout << "Function execution time: " << duration.count() << " ms" << std::endl;

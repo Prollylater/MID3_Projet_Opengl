@@ -444,7 +444,7 @@ public:
     virtual float evaluate(const Vector &point) const = 0;
     inline virtual float gOffsetFunc(const float &a, const float &b) const
     {
-        float r = 2;
+        float r = 0.5;
         float h = std::max(r - std::fabs(a - b), 0.0f) / r;
         return h * h * h * r * (1.0f / 6.0f);
     };

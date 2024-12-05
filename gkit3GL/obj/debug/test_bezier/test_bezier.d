@@ -297,7 +297,8 @@ obj/debug/test_bezier/test_bezier.o: projets/test_bezier.cpp \
  /usr/include/c++/11/bits/uniform_int_dist.h ../src/files.h src/buffers.h \
  src/glcore.h /usr/include/GL/glew.h /usr/include/c++/11/cstddef \
  ../src/mat.h src/program.h src/uniforms.h ../src/color.h src/texture.h \
- ../src/image.h
+ ../src/image.h /usr/include/c++/11/chrono /usr/include/c++/11/ratio \
+ /usr/include/c++/11/limits /usr/include/c++/11/bits/parse_numbers.h
 /usr/include/stdc-predef.h:
 src/bezier.h:
 ../src/vec.h:
@@ -682,3 +683,7 @@ src/uniforms.h:
 ../src/color.h:
 src/texture.h:
 ../src/image.h:
+/usr/include/c++/11/chrono:
+/usr/include/c++/11/ratio:
+/usr/include/c++/11/limits:
+/usr/include/c++/11/bits/parse_numbers.h:

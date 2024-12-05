@@ -301,7 +301,8 @@ obj/debug/test_ffd/test_ffd.o: projets/test_ffd.cpp \
  /usr/include/c++/11/bits/stl_heap.h \
  /usr/include/c++/11/bits/stl_tempbuf.h ../src/files.h src/buffers.h \
  src/glcore.h src/program.h src/uniforms.h ../src/color.h src/texture.h \
- ../src/image.h
+ ../src/image.h /usr/include/c++/11/chrono /usr/include/c++/11/ratio \
+ /usr/include/c++/11/bits/parse_numbers.h
 /usr/include/stdc-predef.h:
 ../src/vec.h:
 /usr/include/c++/11/iostream:
@@ -696,3 +697,6 @@ src/uniforms.h:
 ../src/color.h:
 src/texture.h:
 ../src/image.h:
+/usr/include/c++/11/chrono:
+/usr/include/c++/11/ratio:
+/usr/include/c++/11/bits/parse_numbers.h:

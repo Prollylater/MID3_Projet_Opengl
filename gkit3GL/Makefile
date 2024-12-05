@@ -10,6 +10,7 @@ endif
 
 ifeq ($(config),debug)
   libgkit3GL_config = debug
+  abcd_config = debug
   cubeworld_config = debug
   test_bezier_config = debug
   test_deformations_config = debug
@@ -18,6 +19,7 @@ ifeq ($(config),debug)
 endif
 ifeq ($(config),release)
   libgkit3GL_config = release
+  abcd_config = release
   cubeworld_config = release
   test_bezier_config = release
   test_deformations_config = release
@@ -25,7 +27,7 @@ ifeq ($(config),release)
   test_implicite_surface_config = release
 endif
 
-PROJECTS := libgkit3GL cubeworld test_bezier test_deformations test_ffd test_implicite_surface
+PROJECTS := libgkit3GL abcd cubeworld test_bezier test_deformations test_ffd test_implicite_surface
 
 .PHONY: all clean help $(PROJECTS) 
 
@@ -35,6 +37,12 @@ libgkit3GL:
 ifneq (,$(libgkit3GL_config))
 	@echo "==== Building libgkit3GL ($(libgkit3GL_config)) ===="
 	@${MAKE} --no-print-directory -C . -f libgkit3GL.make config=$(libgkit3GL_config)
+endif
+
+abcd: libgkit3GL
+ifneq (,$(abcd_config))
+	@echo "==== Building abcd ($(abcd_config)) ===="
+	@${MAKE} --no-print-directory -C . -f abcd.make config=$(abcd_config)
 endif
 
 cubeworld: libgkit3GL
@@ -69,6 +77,7 @@ endif
 
 clean:
 	@${MAKE} --no-print-directory -C . -f libgkit3GL.make clean
+	@${MAKE} --no-print-directory -C . -f abcd.make clean
 	@${MAKE} --no-print-directory -C . -f cubeworld.make clean
 	@${MAKE} --no-print-directory -C . -f test_bezier.make clean
 	@${MAKE} --no-print-directory -C . -f test_deformations.make clean
@@ -86,6 +95,7 @@ help:
 	@echo "   all (default)"
 	@echo "   clean"
 	@echo "   libgkit3GL"
+	@echo "   abcd"
 	@echo "   cubeworld"
 	@echo "   test_bezier"
 	@echo "   test_deformations"
