@@ -11,6 +11,9 @@ struct Region
 
     std::array<Point, 8> corners;
 
+//    std::vector<short> element_a_count;
+//   std::vector<short> element_a_start;
+
     Region(const Point &corn_max, const Point &corn_min)
     {
         corners.at(0) = Point(corn_min.x, corn_min.y, corn_min.z); // Min corner
@@ -36,31 +39,6 @@ struct Plane
         : normal(normal), distance(distance) {}
 };
 
-/*
-bool insideFrustum(Region &regions, const Frustum &frustum)
-{
-    // Assume Frustum has six planes, with each plane as vec4 (a, b, c, d) for ax + by + cz + d = 0
-    for (const auto& plane : frustum.planes) {
-        int outside_count = 0;
-
-        // Count corners outside this plane
-        for (const auto& corner : regions.corners) {
-            vec4 point(corner, 1.0f);
-            if (dot(plane, point) < 0) {
-                outside_count++;
-            }
-        }
-
-        // If all corners are outside one plane, region is fully outside the frustum
-        if (outside_count == regions.corners.size()) {
-            return false;
-        }
-    }
-
-    // If not fully outside any plane, region intersects or is inside the frustum
-    return true;
-}
-*/
 
 struct Frustrum
 {
@@ -132,29 +110,11 @@ Frustrum createFrustumplane(Transform projection)
     return Frustrum(top, bottom, right, left, far, near);
 }
 
-/*
-bool insideFrustum(Region &regions, const Frustrum &frust)
-{
-    // check box outside/inside of frustum
-    for (int i = 0; i < 6; i++)
-    {
-
-        int counter = 0;
-
-        for (int j = 0; j < regions.corners.size(); j++)
-        {
-            counter += ((dot(frust.planes.at(i).normal, regions.corners.at(j)) < 0.0)) ? 1 : 0;
-        }
-
-        if (counter == 8)
-            return false;
-    }
-}*/
 
 bool insideFrustum(Region &regions, const Transform &mvp)
 {
     // Check if any corner is inside the frustum
-    for (int j = 0; j < regions.corners.size(); j++)
+    for (unsigned int j = 0; j < regions.corners.size(); j++)
     {
         vec4 curr_corner = vec4(regions.corners.at(j)); 
         vec4 corner_clip_space = mvp(curr_corner); // Apply MVP matrix
@@ -162,7 +122,7 @@ bool insideFrustum(Region &regions, const Transform &mvp)
         // Check if the corner is inside all six frustum planes
         bool is_inside = (corner_clip_space.x >= -corner_clip_space.w && corner_clip_space.x <= corner_clip_space.w) && // Left & Right
                          (corner_clip_space.y >= -corner_clip_space.w && corner_clip_space.y <= corner_clip_space.w) && // Top & Bottom
-                         (corner_clip_space.z >= -corner_clip_space.w*2 && corner_clip_space.z <= corner_clip_space.w);   // Near & Far
+                         (corner_clip_space.z >= -corner_clip_space.w && corner_clip_space.z <= corner_clip_space.w);   // Near & Far
 
         if (is_inside) {
             // Early exit 

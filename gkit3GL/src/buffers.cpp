@@ -2,7 +2,6 @@
 #include <cassert>
 
 #include "buffers.h"
-
 template <typename T>
 static GLuint create_buffer(const GLenum target, const std::vector<T> &data)
 {

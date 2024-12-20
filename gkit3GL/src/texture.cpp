@@ -281,16 +281,14 @@ GLuint make_vec4_texture(const int unit,
 
 GLuint make_skybox()
 {
-    std::vector<
-        const char *>
-        box;
+    std::array<const char *,6>box;
 
-    box.push_back("./data/right.jpg");
-    box.push_back("./data/left.jpg");
-    box.push_back("./data/top.jpg");
-    box.push_back("./data/bottom.jpg");
-    box.push_back("./data/front.jpg");
-    box.push_back("./data/back.jpg");
+    box[0] = ("./data/cubemap/right.jpg");
+    box[1]=("./data/cubemap/left.jpg");
+    box[2]=("./data/cubemap/bottom.jpg");
+    box[3]=("./data/cubemap/top.jpg");
+    box[4]=("./data/cubemap/front.jpg");
+    box[5]=("./data/cubemap/back.jpg");
 
     GLuint texture = 0;
 
@@ -318,8 +316,6 @@ GLuint make_skybox()
 
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                          0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
-            // Generate Texture Mipmaps
-            //  glGenerateMipmap(GL_TEXTURE_2D);
             stbi_image_free(data);
         }
         else

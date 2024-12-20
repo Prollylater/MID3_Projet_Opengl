@@ -83,27 +83,18 @@ bool bindcomputeTexture(GLuint program, GLuint position, GLuint color, GLuint zb
 {
     // Positions
     glBindImageTexture(0, position, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);
-    // GLint location = glGetUniformLocation(program, "positions");
-    // glUniform1i(location, 0);
-    // Color
+
     glBindImageTexture(1, color, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);
-    // GLint location = glGetUniformLocation(program, "colors");
-    // glUniform1i(location, 1);
 
     // Zbuffer
     glBindImageTexture(2, zbuffer, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32UI);
-    // GLint location = glGetUniformLocation(program, "zbuffer");
-    // glUniform1i(location, 2);
 
     // normal
     glBindImageTexture(3, normal, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);
-    // GLint location = glGetUniformLocation(program, "normals");
-    // glUniform1i(location, 3);
 
     // output texture
     glBindImageTexture(4, output, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-    // GLint location = glGetUniformLocation(program, "output_texture");
-    // glUniform1i(location, 4);
+
     return true;
 }
 
@@ -140,7 +131,7 @@ bool init()
 
     glGenFramebuffers(1, &read_framebuffer);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, read_framebuffer);
-    glFramebufferTexture(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, culler.output,  0);
+    glFramebufferTexture(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, culler.output, 0);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
 
     ///
@@ -308,10 +299,9 @@ void draw()
     glDispatchCompute(global_width / 16, global_height / 16, 1);
     // glDrawElements(GL_TRIANGLES, m_objet[0].indices.size(), GL_UNSIGNED_INT, 0);
 
-////
     glBindFramebuffer(GL_READ_FRAMEBUFFER, read_framebuffer);
-    glBlitFramebuffer(/* source */ 0,0, global_width,global_height,  /* destination */ 0,0,  global_width,global_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    // Pass it to the screen i guess
+    //Blit from the currenlty bound ReadFrameBuffer to the currently bound DRaw  buffer
+    glBlitFramebuffer(/* source */ 0, 0, global_width, global_height, /* destination */ 0, 0, global_width, global_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 void quit()

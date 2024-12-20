@@ -79,7 +79,7 @@ Vector BezierPatches::compute_partial_derivU(float u, float v)
         int n = control_point[i].size();
         float bernstein_u = compute_bernst_basis(m - 2, u, i);
 
-        for (int j = 0; j < control_point[i].size(); j++)
+        for (size_t j = 0; j < control_point[i].size(); j++)
         {
             float bernstein_v = compute_bernst_basis(n - 1, v, j);
             pu = pu + m * (control_point[i + 1][j] - control_point[i][j]) * bernstein_u * bernstein_v;
@@ -186,9 +186,9 @@ void BezierPatches::returnPointGrid(std::vector<Point> &vertices,
     vertices.clear();
     faces.clear();
 
-    for (int i = 0; i < control_point.size(); i++)
+    for (size_t i = 0; i < control_point.size(); i++)
     {
-        for (int j = 0; j < control_point[i].size() - 1; j++)
+        for (size_t j = 0; j < control_point[i].size() - 1; j++)
         {
             vertices.emplace_back(1.2 * control_point[i][j].x, 0.5  * control_point[i][j].y, 1.2  * control_point[i][j].z);
         }

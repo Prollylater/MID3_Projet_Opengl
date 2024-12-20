@@ -31,71 +31,77 @@ static int regions_size = 0;
 std::vector<vec4> m_cubes_instance_data;
 std::vector<vec4> m_cubes_instance_data_visible;
 
-std::vector<std::vector<Vector>> m_objet_translations;
-std::vector<std::vector<Vector>> m_objet_translations_visibles;
+//Should have been used for additionnal thing in the map
+std::vector<std::vector<vec4>> m_objet_translations;
+std::vector<std::vector<vec4>> m_objet_translations_visibles;
+
+//Buffer
 std::vector<GLuint> m_objet_translate_buffer;
-GLuint m_objet_text_id_buffer;
 
+shadowMapFBO shadowstuff;
 
-//Skybox
-GLuint skyboxvao = 0;
-GLuint skyboxtexture = 0;
+int global_width = 1024;
+int global_height = 576;
 
-
-ShadowMapFBO shadowstuf;
-
-
-bool init()
+bool init(int regions_div, int map_type)
 {
 
-    camera.projection(1024, 576, 50);
-
+    camera.projection(global_width, global_height, 50);
     MeshIOData tmp;
-    if (!read_meshio_data("./data/cube_world/Blocks/OBJ/Block_Grass.obj", tmp))
+    if (!read_meshio_data("./data/cube_world/Blocks/OBJ/Block_Ice.obj", tmp))
         return false;
     m_objet.push_back(tmp);
     tmp = MeshIOData();
-    // m_objet.push_back(tmp);
 
     // LOADING TEXTURES
     std::vector<const char *> m_texture_names;
     // LOADING TEXTURES ARRAY
-    m_texture.push_back(read_texture(0, "./data/cube_world/Atlas.png"));
-    m_texture_names.push_back("./data/cube_world/Textures/grassy.png");  // Plain
-    m_texture_names.push_back("./data/cube_world/Textures/grass.png");   // Forest
-    m_texture_names.push_back("./data/cube_world/Textures/grassy2.png"); // OtherPlain
-    m_texture_names.push_back("./data/cube_world/Textures/water.png");   // Water
-    m_texture_names.push_back("./data/cube_world/Textures/weird.png");   // Hole
-
-    m_texture_names.push_back("./data/cube_world/Textures/granite.png"); // Rocky Rock
-    m_texture_names.push_back("./data/cube_world/Textures/stone1.png");  // Gray Rock
-    m_texture_names.push_back("./data/cube_world/Textures/pearm.png");   // Beach
-
-    m_texture_names.push_back("./data/cube_world/Textures/bground.png"); // Rock Top
-    m_texture_names.push_back("./data/cube_world/Textures/snow2.png");   // Snow
-    m_texture_names.push_back("./data/cube_world/Textures/weird2.png");  // Light;
-
-    m_texture_names.push_back("./data/cube_world/Textures/red.png");
-    m_texture_names.push_back("./data/cube_world/Textures/weird2.png");
+    fillWithTexturesNames(m_texture_names);
 
     m_texture.push_back(read_texture_array(0, m_texture_names));
-    // Translations related manipulation
-    // m_objet_translations.resize(1);
-    // TODO:Test this implementation
-    // regions_size = generateTerrain(m_objet_translations[0], "./data/terrain/mymapgr.png", regions, 5);
-    /* regions_size = generateTerrain(m_objet_translations, m_cube_texture_id, "./data/terrain/mapfull.png", "./data/terrain/heightmap.png",
-                      regions, 1, 10);*/
-    regions_size = generateTerrain(m_cubes_instance_data, "./data/terrain/mapsmall.png", "./data/terrain/hmapsmall.png",
-                                   regions, 1, 4);
+
+    const char *height_map;
+    const char *biome_map;
+    // Check if the argument is 1 or 2, and modify file paths accordingly
+    if (map_type != 3)
+    {
+        if (map_type == 2)
+        {
+            height_map = "./data/terrain/hmapfull.png";
+            biome_map = "./data/terrain/mapfull.png";
+        }
+        else if (map_type == 1)
+        {
+            height_map = "./data/terrain/hmapmedium.png";
+            biome_map = "./data/terrain/mapmedium.png";
+        }
+        else
+        {
+            height_map = "./data/terrain/hmapsmall.png";
+            biome_map = "./data/terrain/mapsmall.png";
+        }
+        regions_size = generateTerrain(m_cubes_instance_data, biome_map, height_map,
+                                       regions, regions_div);
+    }
+    else
+    {
+        height_map = "./data/terrain/terrain.png";
+
+        regions_size = genWorldFromHmap(m_cubes_instance_data, height_map,
+                                        regions, regions_div);
+    }
+
     m_objet_translate_buffer.resize(1);
     GLuint tmp_vao = create_buffers_instancesV(m_objet_translate_buffer[0], m_objet[0].positions, m_objet[0].indices,
                                                m_objet[0].texcoords, m_objet[0].normals, m_cubes_instance_data);
-    std::cout << "And here we wrash" << std::endl;
+    std::cout << "Individual regions size:" << regions_size << std::endl;
+    std::cout << "Number of regions:" << regions.size() << std::endl;
 
     m_vao.push_back(tmp_vao);
 
     // charge et compile les shaders
     tmp_vao = read_program("projets/cube_shading.glsl");
+    shadowstuff.init(global_width, global_height, "projets/cube_shading_shad.glsl");
 
     m_programs.push_back(tmp_vao);
     m_cubes_instance_data_visible.resize(m_cubes_instance_data.size());
@@ -106,10 +112,6 @@ bool init()
         program_print_errors(progam);
     }
 
-    /*
-    // affiche les erreurs de maniere lisible.
-    program_print_errors(skyboxprog);
-    */
     glBindTexture(GL_TEXTURE_2D, 0);
     for (const unsigned &program : m_programs)
     {
@@ -120,99 +122,25 @@ bool init()
         // erreur de compilation / link / chargement des shaders
     }
     std::cout << "Initialization finished !" << std::endl;
-
     return true;
 };
-// TODO: Rare CRASH tracing back to an assert at mat.cpp 86
 
 // Global  for tracking mouse states and movement
 float dist_an_x = 0, dist_an_y = 0, dist_an_z = 0;
 float pitch, yaw = 0.0f;
 // Keyboard control TODO:Decomission after 3rd person mvm
 bool moved = true;
-void input()
-{
-    // Classic variable
-    static float cam_speed = 0.05f;
-
-    static int i;
-    if (key_state('1'))
-    {
-        cam_speed += 0.02f;
-    }
-    if (key_state('2'))
-    {
-        cam_speed -= 0.02f;
-        cam_speed = cam_speed > 0 ? cam_speed : 0.02f;
-    }
-
-    if (key_state('e'))
-    {
-        pitch += 0.7f;
-        moved = true;
-    }
-    if (key_state('a'))
-    {
-        pitch -= 0.7f;
-        moved = true;
-    }
-    if (key_state('w'))
-    {
-        yaw -= 0.7f;
-        moved = true;
-    }
-    if (key_state('x'))
-    {
-        yaw += 0.7f;
-        moved = true;
-    }
-
-    if (key_state('q'))
-    {
-        dist_an_x -= cam_speed;
-        moved = true;
-    }
-    if (key_state('d'))
-    {
-        dist_an_x += cam_speed;
-        moved = true;
-    }
-    if (key_state('r'))
-    {
-        dist_an_y -= cam_speed;
-        moved = true;
-    }
-    if (key_state('f'))
-    {
-        dist_an_y += cam_speed;
-        moved = true;
-    }
-    if (key_state('z'))
-    {
-        dist_an_z -= cam_speed;
-        moved = true;
-    }
-    if (key_state('s'))
-    {
-        dist_an_z += cam_speed;
-        moved = true;
-    }
-
-    return;
-}
 
 void draw()
 {
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*| GL_STENCIL_BUFFER_BIT*/);
-    input();
-    camera.prerender();
+    glViewport(0, 0, global_width, global_height);
+    camera.manageCameraLight(moved);
 
     const Transform model = Identity();   // placer le modele coordonnées des sommets
     const Transform view = camera.view(); // camera
-                                          //  Transform view = Inverse(model * RotationX(yaw) * RotationY(pitch) * Translation(-dist_an_x, dist_an_y, -dist_an_z)); // camera
     const Transform projection = camera.projection();
-    // const Transform projection = Perspective(50,1024/576,0.1,100);
+
     const Transform mvp = projection * view * model;
     const Transform mv = view * model;
     auto setUniforms = [&](GLuint program)
@@ -223,12 +151,6 @@ void draw()
         program_uniform(program, "mvMatrix", mv);                 // Set model-view matrix
         program_uniform(program, "mvpMatrix", mvp);               // Set model-view-projection matrix
     };
-
-    glBindVertexArray(m_vao[0]);
-    // Model pass
-    glUseProgram(m_programs[0]);
-
-    glViewport(0, 0, 1024, 576);
 
     // Handling Reegion Boxes
     if (moved)
@@ -247,26 +169,50 @@ void draw()
             }
         }
 
-        // Update the buffer with the visible translations
-        // TODO: Some adjustment are still needed
-
         glNamedBufferSubData(m_objet_translate_buffer[0], 0, m_cubes_instance_data_visible.size() * sizeof(vec4),
                              m_cubes_instance_data_visible.data());
-        std::cout << "Crash hzere" << std::endl;
-
-        // glBindBuffer(GL_ARRAY_BUFFER, buffer_translations);
-        // glBufferSubData(GL_ARRAY_BUFFER, 0, visibleTranslations.size() * sizeof(glm::vec3), visibleTranslations.data());
 
         std::cout << m_cubes_instance_data_visible.size() << " visibles object for " << m_cubes_instance_data.size() << std::endl;
     }
     /////////////////////////////////////////////////////////////
 
-    // Uniform
+    // Compute the MVP matrix from the light's point of view,
+    Vector lightInvDir = normalize(Vector(0., 1., 0.));
+    // Point lightPosition = Point(0., 25., 0.);
+    Point lightPosition = Point(-50., 55., 100.);
+    Point lightInvsDir = Point(1., 1., 1.);
+
+    glBindVertexArray(m_vao[0]);
+
+    // Shadow Pass
+    shadowstuff.BindForWriting();
+
+    // Random values till renderdoc output put out a decent shadow
+
+    Transform depthProjectionMatrix = Ortho(-25, 25, -25, 25, 0.1, 1000.0);
+    Transform depthViewMatrix = Lookat(lightPosition, lightInvsDir, Vector(0, 1, 0));
+    Transform depthModelMatrix = Identity();
+    Transform depthmvp = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+
+    program_uniform(shadowstuff.shadowprog, "lightSpaceMatrix", depthmvp);
+
+    glDrawElementsInstanced(GL_TRIANGLES, m_objet[0].indices.size(), GL_UNSIGNED_INT, 0, m_cubes_instance_data_visible.size());
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Model pass
+    glUseProgram(m_programs[0]);
     setUniforms(m_programs[0]);
+    depthmvp = shadowstuff.returnBiasMat() * depthmvp;
+
+    // Uniform
+    program_uniform(m_programs[0], "lightSpaceMatrix", depthmvp);
+    program_uniform(m_programs[0], "lightdir", lightInvDir);
 
     // Texture
-    program_use_texture(m_programs[0], "texture_samp", 0, m_texture[0]);
-    program_use_texture_array(m_programs[0], "texture_samp_arr", 1, m_texture[1]);
+    program_use_texture_array(m_programs[0], "texture_samp_arr", 0, m_texture[0]);
+    shadowstuff.BindForReading(2, "shadow_texture", m_programs[0]);
 
     glDrawElementsInstanced(GL_TRIANGLES, m_objet[0].indices.size(), GL_UNSIGNED_INT, 0, m_cubes_instance_data_visible.size());
 }
@@ -281,26 +227,25 @@ void quit()
 
 int main(int argc, char **argv)
 {
+    int regions_divide = 16;
+    if (argc > 2)
+        regions_divide = atoi(argv[2]);
 
-    Window window = create_window(1024, 576);
+    int map_type = 0;
+    if (argc > 1)
+        map_type = atoi(argv[1]);
+    Window window = create_window(global_width, global_height);
     Context context = create_context(window);
 
     // etat openGL de base / par defaut
-    glClearColor(0.1, 0.1, 0.1, 1);
+    glClearColor(0.0, 0.0, 0.f, 1.0f);
     glClearDepth(1);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-
-    // glEnable(GL_STENCIL_TEST);
-    // sfail: action to take if the stencil test fails.
-    // dpfail: action to take if the stencil test passes, but the depth test fails.
-    // dppass: action to take if both the stencil and the depth test pass.
-    // glStencilOp(GL_KEEP,GL_KEEP, GL_REPLACE);
-
-    if (!init())
+    if (!init(regions_divide, map_type))
         return 1;
 
     while (events(window))

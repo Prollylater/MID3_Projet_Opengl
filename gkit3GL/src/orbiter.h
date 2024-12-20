@@ -15,6 +15,14 @@
 //! camera pour observer un objet.
 
 //! representation de la camera, type orbiter, placee sur une sphere autour du centre de l'objet.
+
+ 
+
+/*
+ * Gestion de la camera et de la lumiere.
+ */
+
+ 
 class Orbiter
 {
 public:
@@ -39,6 +47,7 @@ public:
     void translation(const float x, const float y);
     //! rapproche / eloigne la camera du centre.
     void move(const float z);
+    void manageCameraLight(bool& moved);
 
     Transform view(Transform trans ) const ;
 

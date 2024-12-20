@@ -28,6 +28,7 @@ GLuint vao = 0;
 GLuint skyboxvao = 0;
 
 GLuint texture = 0;
+
 GLuint skyboxtexture = 0;
 
 unsigned count = 0;

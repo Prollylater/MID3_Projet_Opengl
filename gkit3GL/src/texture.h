@@ -4,6 +4,7 @@
 
 #include "glcore.h"
 #include "image.h"
+#include <array>
 
 //! \addtogroup openGL
 ///@{
