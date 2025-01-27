@@ -24,8 +24,10 @@ std::vector<GLuint> m_objet_translate_buffer;
 GLuint m_objet_text_id_buffer;
 
 GLuint read_framebuffer;
-constexpr int global_width = 1024;
-constexpr int global_height = 576;
+int global_width = 1024;
+int global_height = 576;
+
+int compute_shader_type = 2;
 
 // Structure handling the ressource, supportuing the occlusion culling
 struct GBufferstruct
@@ -33,7 +35,7 @@ struct GBufferstruct
     // creation des textures pour stocker le GBuffer
     GLuint fbo;
     GLuint zbuffer;
-    GLuint position;
+    // GLuint position;
     GLuint normal;
     GLuint color;
     GLuint output;
@@ -47,7 +49,7 @@ struct GBufferstruct
     {
         // Textures
         zbuffer = make_depth_texture(0, global_width, global_height);
-        position = make_vec4_texture(0, global_width, global_height);
+        // position = make_vec4_texture(0, global_width, global_height);
         normal = make_vec4_texture(0, global_width, global_height);
         color = make_vec4_texture(0, global_width, global_height);
         output = make_vec4_texture(0, global_width, global_height);
@@ -61,11 +63,11 @@ struct GBufferstruct
 
         glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, zbuffer, 0);
         glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, position, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, normal, 0);
-        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, output, 0);
+        // glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, position, 0);
+        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, normal, 0);
+        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, output, 0);
 
-        glDrawBuffers(4, buffers_enum);
+        glDrawBuffers(3, buffers_enum);
 
         if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
@@ -79,21 +81,21 @@ struct GBufferstruct
     }
 };
 
-bool bindcomputeTexture(GLuint program, GLuint position, GLuint color, GLuint zbuffer, GLuint normal, GLuint output)
+bool bindcomputeTexture(GLuint program, GLuint color, GLuint zbuffer, GLuint normal, GLuint output, GLuint position = {})
 {
     // Positions
-    glBindImageTexture(0, position, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);
+    // glBindImageTexture(0, position, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);
 
-    glBindImageTexture(1, color, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);
+    glBindImageTexture(0, color, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);
 
     // Zbuffer
-    glBindImageTexture(2, zbuffer, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32UI);
+    glBindImageTexture(1, zbuffer, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32UI);
 
     // normal
-    glBindImageTexture(3, normal, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);
+    glBindImageTexture(2, normal, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);
 
     // output texture
-    glBindImageTexture(4, output, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+    glBindImageTexture(3, output, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
     return true;
 }
@@ -102,6 +104,15 @@ GBufferstruct culler;
 
 bool init()
 {
+    auto padd_width = [](int num)
+    {
+        if (num % 4 != 0)
+        {
+            return num + (4 - num % 4);
+        }
+    };
+    // global_height=padd_width(global_height);
+    // global_width = padd_width(global_width);
 
     camera.projection(global_width, global_height, 50);
 
@@ -121,10 +132,10 @@ bool init()
     m_programs.push_back(tmp_vao);
     tmp_vao = read_program("projets/abcd_shadingdef.glsl");
     m_programs.push_back(tmp_vao);
-    tmp_vao = read_program("projets/abcd_compute.glsl");
+    tmp_vao = read_program("projets/dacs_compute_shader.glsl");
     m_programs.push_back(tmp_vao);
-    //  tmp_vao = read_program("projets/abcd_dshading.glsl");
-    //  m_programs.push_back(tmp_vao);
+    tmp_vao = read_program("projets/dacs_compute_shader_one.glsl");
+    m_programs.push_back(tmp_vao);
 
     culler.initOccCuller();
     ///
@@ -133,8 +144,6 @@ bool init()
     glBindFramebuffer(GL_READ_FRAMEBUFFER, read_framebuffer);
     glFramebufferTexture(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, culler.output, 0);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
-
-    ///
 
     std::cout << "Sort of here" << std::endl;
     // affiche les erreurs de maniere lisible.
@@ -167,80 +176,10 @@ float dist_an_x = 0, dist_an_y = 0, dist_an_z = 0;
 float pitch, yaw = 0.0f;
 // Keyboard control TODO:Decomission after 3rd person mvm
 bool moved = true;
-void input()
-{
-    // Classic variable
-    static float cam_speed = 0.05f;
 
-    static int i;
-    if (key_state('1'))
-    {
-        cam_speed += 0.02f;
-    }
-    if (key_state('2'))
-    {
-        cam_speed -= 0.02f;
-        cam_speed = cam_speed > 0 ? cam_speed : 0.02f;
-    }
-
-    if (key_state('e'))
-    {
-        pitch += 0.7f;
-        moved = true;
-    }
-    if (key_state('a'))
-    {
-        pitch -= 0.7f;
-        moved = true;
-    }
-    if (key_state('w'))
-    {
-        yaw -= 0.7f;
-        moved = true;
-    }
-    if (key_state('x'))
-    {
-        yaw += 0.7f;
-        moved = true;
-    }
-    if (key_state('q'))
-    {
-        dist_an_x -= cam_speed;
-        moved = true;
-    }
-    if (key_state('d'))
-    {
-        dist_an_x += cam_speed;
-        moved = true;
-    }
-    if (key_state('r'))
-    {
-        dist_an_y -= cam_speed;
-        moved = true;
-    }
-    if (key_state('f'))
-    {
-        dist_an_y += cam_speed;
-        moved = true;
-    }
-    if (key_state('z'))
-    {
-        dist_an_z -= cam_speed;
-        moved = true;
-    }
-    if (key_state('s'))
-    {
-        dist_an_z += cam_speed;
-        moved = true;
-    }
-
-    return;
-}
-
-void draw()
+void draw_normal()
 {
 
-    // input();
     camera.prerender();
     int curr_program = 0;
 
@@ -267,6 +206,85 @@ void draw()
     glBindVertexArray(m_vao[0]);
 
     // Texture
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Model pass
+    curr_program = 0;
+    glUseProgram(m_programs[curr_program]);
+    setUniforms(m_programs[curr_program]);
+
+    glDrawElements(GL_TRIANGLES, m_objet[0].indices.size(), GL_UNSIGNED_INT, 0);
+}
+
+void draw()
+{
+
+    camera.prerender();
+    int curr_program = 0;
+
+    const Transform model = Identity();
+    const Transform view = camera.view();
+    const Transform projection = camera.projection();
+    const Transform mvp = projection * view * model;
+    const Transform mv = view * model;
+    // Lambda to set shader uniforms
+    auto setUniforms = [&](GLuint program)
+    {
+        program_uniform(program, "modelMatrix", model);           // Set model matrix
+        program_uniform(program, "viewMatrix", view);             // Set view matrix
+        program_uniform(program, "projectionMatrix", projection); // Set projection matrix
+        program_uniform(program, "mvMatrix", mv);                 // Set model-view matrix
+        program_uniform(program, "mvpMatrix", mvp);               // Set model-view-projection matrix
+    };
+
+    auto dispatchDacs = [&](int curr_phase, int curr_program)
+    {
+        program_uniform(m_programs[curr_program], "column_pixels", (uint)global_width); // Set model matrix
+        program_uniform(m_programs[curr_program], "row_pixels", (uint)global_height);   // Set model matrix
+
+        int pattern_radius = 2;
+        int block_size_x = 0;
+        if (curr_phase < 3)
+        {
+            block_size_x = 4;
+            pattern_radius = 2;
+        }
+        //Notes: This gave an illegal instruction
+        //TODO: Lookup Why
+        //else if (curr_phase >= 3 && curr_phase < 5)
+
+        else if (curr_phase >= 3 )
+        {
+            block_size_x = 2;
+            pattern_radius = 1;
+        }
+
+        if (curr_phase <  5)
+        {
+            program_uniform(m_programs[curr_program], "phase", (uint)curr_phase); // Set model matrix
+            program_uniform(m_programs[curr_program], "block_step", (uint)block_size_x);
+            program_uniform(m_programs[curr_program], "pattern_radius", pattern_radius);
+        }
+
+        // x Pattern
+        //+ Pattern
+        // Pour phase 0 on a
+
+        // Get the number of block each thread should deal with hence the number of group
+        int num_thread_x = (global_width + block_size_x - 1) / block_size_x;
+        int num_thread_y = (global_height + block_size_x - 1) / block_size_x;
+
+        //
+        glDispatchCompute((num_thread_x + 7) / 8, (num_thread_y + 7) / 8, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    };
+
+    // Filling G-buffer
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, culler.fbo);
+
+    // Model data
+    glBindVertexArray(m_vao[0]);
+
+    // Texture
     // program_use_texture(m_programs[0], "texture_samp", 0, m_texture[0]);
     // program_use_texture_array(m_programs[0], "texture_samp_arr", 1, m_texture[1]);
 
@@ -279,28 +297,34 @@ void draw()
     glDrawElements(GL_TRIANGLES, m_objet[0].indices.size(), GL_UNSIGNED_INT, 0);
 
     // Deffered pass
-    /*glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    curr_program = 0;
-    glUseProgram(m_programs[curr_program]);
-    setUniforms(m_programs[curr_program]);
-    program_use_texture(m_programs[curr_program], "texd", 3, culler.color);
-
-    glDrawElements(GL_TRIANGLES, m_objet[0].indices.size(), GL_UNSIGNED_INT, 0);*/
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Compute shader
-    curr_program = 2;
+    curr_program = compute_shader_type;
     glUseProgram(m_programs[curr_program]);
-    // setUniforms(m_programs[curr_program]);
-    bindcomputeTexture(m_programs[curr_program], culler.position, culler.color, culler.zbuffer, culler.normal, culler.output);
-    glDispatchCompute(global_width / 16, global_height / 16, 1);
-    // glDrawElements(GL_TRIANGLES, m_objet[0].indices.size(), GL_UNSIGNED_INT, 0);
+    bindcomputeTexture(m_programs[curr_program], culler.color, culler.zbuffer, culler.normal, culler.output);
+    // glDispatchCompute(global_width / 8, global_height / 8, 1);
+    // 16 by 16 group
+    if (curr_program == 2)
+    {
+        dispatchDacs(0, curr_program);
+        dispatchDacs(1, curr_program);
+        dispatchDacs(2, curr_program);
+        dispatchDacs(3, curr_program);
+        dispatchDacs(4, curr_program);
+    }
+    else if (curr_program == 3)
+    {
+        dispatchDacs(5, curr_program);
+        //For use the shader with two pass
+        // dispatchDacs(0, curr_program);
+        // dispatchDacs(4, curr_program);
+    }
+
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, read_framebuffer);
-    //Blit from the currenlty bound ReadFrameBuffer to the currently bound DRaw  buffer
+    // Blit from the currenlty bound ReadFrameBuffer to the currently bound DRaw  buffer
     glBlitFramebuffer(/* source */ 0, 0, global_width, global_height, /* destination */ 0, 0, global_width, global_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
@@ -314,6 +338,15 @@ void quit()
 
 int main(int argc, char **argv)
 {
+
+    if (argc > 1)
+    {
+        compute_shader_type = atoi(argv[1]);
+        if (compute_shader_type != 3 && compute_shader_type != 2)
+        {
+            compute_shader_type = 2;
+        }
+    }
 
     Window window = create_window(global_width, global_height);
     Context context = create_context(window);

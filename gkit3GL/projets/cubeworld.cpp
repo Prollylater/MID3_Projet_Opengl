@@ -55,14 +55,13 @@ bool init(int regions_div, int map_type)
 
     // LOADING TEXTURES
     std::vector<const char *> m_texture_names;
-    // LOADING TEXTURES ARRAY
     fillWithTexturesNames(m_texture_names);
 
     m_texture.push_back(read_texture_array(0, m_texture_names));
 
     const char *height_map;
     const char *biome_map;
-    // Check if the argument is 1 or 2, and modify file paths accordingly
+    //Charge la bonne carte
     if (map_type != 3)
     {
         if (map_type == 2)
