@@ -40,8 +40,8 @@ struct GBufferstruct
     GLuint color;
     GLuint output;
 
-    GLenum buffers_enum[4] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
-                              GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
+    GLenum buffers_enum[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+                              GL_COLOR_ATTACHMENT2};
 
     GBufferstruct() = default;
 
@@ -136,6 +136,12 @@ bool init()
     m_programs.push_back(tmp_vao);
     tmp_vao = read_program("projets/dacs_compute_shader_one.glsl");
     m_programs.push_back(tmp_vao);
+    tmp_vao = read_program("projets/dacs_compute_shader_mem.glsl");
+    m_programs.push_back(tmp_vao);
+    tmp_vao = read_program("projets/dacs_compute_shader_two.glsl");
+    m_programs.push_back(tmp_vao);
+    //tmp_vao = read_program("projets/dacs_compute_shade_color.glsl");
+   // m_programs.push_back(tmp_vao);
 
     culler.initOccCuller();
     ///
@@ -248,21 +254,32 @@ void draw()
             block_size_x = 4;
             pattern_radius = 2;
         }
-        //Notes: This gave an illegal instruction
-        //TODO: Lookup Why
-        //else if (curr_phase >= 3 && curr_phase < 5)
+        // Notes: This gave an illegal instruction
+        // TODO: Lookup Why
+        // else if (curr_phase >= 3 && curr_phase < 5)
 
-        else if (curr_phase >= 3 )
+        else if (curr_phase >= 3)
         {
             block_size_x = 2;
             pattern_radius = 1;
         }
 
-        if (curr_phase <  5)
+        if (curr_phase < 10)
         {
+
             program_uniform(m_programs[curr_program], "phase", (uint)curr_phase); // Set model matrix
             program_uniform(m_programs[curr_program], "block_step", (uint)block_size_x);
             program_uniform(m_programs[curr_program], "pattern_radius", pattern_radius);
+        }
+        else if (curr_phase == 11)
+        {
+            const int pattern_radiusb = 2;
+            const int block_size_xb = 4;
+            program_uniform(m_programs[curr_program], "block_step", (uint)block_size_xb);
+            program_uniform(m_programs[curr_program], "pattern_radius", pattern_radiusb);
+
+            program_uniform(m_programs[curr_program], "block_stepb", (uint)block_size_x);
+            program_uniform(m_programs[curr_program], "pattern_radiusb", pattern_radius);
         }
 
         // x Pattern
@@ -306,8 +323,10 @@ void draw()
     bindcomputeTexture(m_programs[curr_program], culler.color, culler.zbuffer, culler.normal, culler.output);
     // glDispatchCompute(global_width / 8, global_height / 8, 1);
     // 16 by 16 group
-    if (curr_program == 2)
+    if (curr_program == 2 ||  curr_program == 6)
     {
+        std::cout<<"Classic 5 Dispatch"<<std::endl;
+
         dispatchDacs(0, curr_program);
         dispatchDacs(1, curr_program);
         dispatchDacs(2, curr_program);
@@ -316,12 +335,23 @@ void draw()
     }
     else if (curr_program == 3)
     {
-        dispatchDacs(5, curr_program);
-        //For use the shader with two pass
-        // dispatchDacs(0, curr_program);
-        // dispatchDacs(4, curr_program);
-    }
+        std::cout<<"One Dispatch Naive"<<std::endl;
 
+        dispatchDacs(10, curr_program);
+    }
+    else if (curr_program == 4)
+    {
+        std::cout<<"One Dispatch Mem Opti"<<std::endl;
+
+        dispatchDacs(11, curr_program);
+    }
+    else if (curr_program == 5)
+    {
+        std::cout<<"Dual Dispatch"<<std::endl;
+
+        dispatchDacs(0, curr_program);
+        dispatchDacs(4, curr_program);
+    }
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, read_framebuffer);
     // Blit from the currenlty bound ReadFrameBuffer to the currently bound DRaw  buffer
@@ -342,7 +372,7 @@ int main(int argc, char **argv)
     if (argc > 1)
     {
         compute_shader_type = atoi(argv[1]);
-        if (compute_shader_type != 3 && compute_shader_type != 2)
+        if (!(compute_shader_type >= 2 && compute_shader_type < 6))
         {
             compute_shader_type = 2;
         }

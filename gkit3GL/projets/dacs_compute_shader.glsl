@@ -8,7 +8,8 @@ float gray(vec3 color) {
 
 bool shading_test(vec3 s, vec3 ss) {
   float v = gray(ss - s * s);
-  return (v > 0.001);
+  //return (v > 0.001);
+  return false;
 }
 
 uniform uint phase;
@@ -26,14 +27,13 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(binding = 0, rgba32f) readonly uniform image2D colors;
 layout(binding = 1, r32f) readonly uniform image2D zbuffer;
 layout(binding = 2, rgba32f) readonly uniform image2D normals;
-layout(binding = 3, rgba32f) writeonly uniform image2D outputtexture;
+layout(binding = 3, rgba32f)  uniform image2D outputtexture;
 
 //stores how many threads are active for the current operation
 
 void shading(ivec2 curr_pix) {
 
-  /*vec3 light_dir = normalize(vec3(1.0, 1.0, 1.0)); 
-
+    vec3 light_dir = normalize(vec3(1.0, 1.0, 1.0)); 
  
     // Get G-BuffersTextures's data
     vec4 frag_normal = imageLoad(normals, curr_pix);
@@ -44,17 +44,17 @@ void shading(ivec2 curr_pix) {
     //Color Calculation
     vec3 normal = normalize(frag_normal.xyz); 
     //This step also deal with light
-    float cos = max(dot(normal, light_dir), 0.0); 
+    float cos = (dot(normal, light_dir)); 
     vec3 final_color = frag_color.rgb * cos;
-    imageStore(outputtexture,curr_pix , vec4(final_color,1.0));*/
-  imageStore(outputtexture, curr_pix, vec4(1.0, 0.0, 0.0, 1.0));
+    imageStore(outputtexture,curr_pix , vec4(final_color,1.0));
 }
 
 
 vec3 clampLoad(ivec2 coord) {
     coord.x = clamp(coord.x, 0, int(column_pixels) - 1);
     coord.y = clamp(coord.y, 0, int(row_pixels) - 1);
-    return imageLoad(colors, coord).rgb;
+    //return imageLoad(colors, coord).rgb;
+    return imageLoad(outputtexture, coord).rgb;
 }
 
  
@@ -73,9 +73,12 @@ void processPatternPlus(ivec2 curr_pix, int sample_radius) {
     vec3 ss = (a*a + b*b + c*c + d*d) / 4.0;
 
     if (shading_test(s, ss)) {
-        imageStore(outputtexture, curr_pix, vec4(1.0, 0.0, 0.0, 1.0));
+        //imageStore(outputtexture, curr_pix, vec4(1.0, 0.0, 0.0, 1.0));
+        shading(curr_pix);
     } else {
-        imageStore(outputtexture, curr_pix, vec4(0.5, 0.0, 0.0, 1.0));
+        //imageStore(outputtexture, curr_pix, vec4(0.5, 0.0, 0.0, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(s, 1.0));
+
     }
 }
 
@@ -95,9 +98,12 @@ void processPatternCross(ivec2 curr_pix, int sample_radius) {
     vec3 ss = (a*a + b*b + c*c + d*d) / 4.0;
 
     if (shading_test(s, ss)) {
-        imageStore(outputtexture, curr_pix, vec4(1.0, 0.0, 1.0, 1.0));
+        //imageStore(outputtexture, curr_pix, vec4(1.0, 0.0, 1.0, 1.0));
+        shading(curr_pix);
+
     } else {
-        imageStore(outputtexture, curr_pix, vec4(0.5, 0.0, 0.5, 1.0));
+        //imageStore(outputtexture, curr_pix, vec4(0.5, 0.0, 0.5, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(s, 1.0));
     }
 }
 

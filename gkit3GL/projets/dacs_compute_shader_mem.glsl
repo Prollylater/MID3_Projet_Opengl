@@ -15,6 +15,10 @@ bool shading_test(vec3 s, vec3 ss) {
 
 uniform uint row_pixels;
 uniform uint column_pixels;
+uniform uint block_step;
+uniform int pattern_radius;
+uniform uint block_stepb;
+uniform int pattern_radiusb;
 
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
@@ -95,7 +99,7 @@ void processPatternPlusb(ivec2 curr_pix, int sample_radius) {
     if (shading_test(s, ss)) {
         imageStore(outputtexture, curr_pix, vec4(0.0, 1.0, 0.0, 1.0));
     } else {
-        imageStore(outputtexture, curr_pix, vec4(0.0, 0.0, 0.0, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(0.0, 0.5, 0.0, 1.0));
     }
 }
 
@@ -114,9 +118,9 @@ void processPatternCrossa(ivec2 curr_pix, int sample_radius) {
     vec3 ss = (a*a + b*b + c*c + d*d) / 4.0;
 
     if (shading_test(s, ss)) {
-        imageStore(outputtexture, curr_pix, vec4(1.0, 0.0, 1.0, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(1.0, 0.5, 1.0, 1.0));
     } else {
-        imageStore(outputtexture, curr_pix, vec4(0.5, 0.0, 0.5, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(0.5, 0.25, 0.5, 1.0));
     }
 }
 
@@ -145,8 +149,6 @@ void processPatternCrossb(ivec2 curr_pix, int sample_radius) {
 void main() {
 
   ivec2 global_id= ivec2(gl_GlobalInvocationID.xy);
-   int block_step = 4;
-    int pattern_radius =2;
   uint group_id = gl_WorkGroupID.x * column_pixels + gl_WorkGroupID.y;
   ivec2 curr_pix= ivec2((global_id.x*block_step),(global_id.y*block_step));
    
@@ -167,22 +169,19 @@ void main() {
         processPatternPlusa(curr_pix,pattern_radius);
    // }
 
-    block_step = 2;
-    pattern_radius =1;
-
-   curr_pix= ivec2((global_id.x*block_step),(global_id.y*block_step));
+   curr_pix= ivec2((global_id.x*block_stepb),(global_id.y*block_stepb));
       //if(phase  >= 3){
 
     //Phase3
-        curr_pix.x += pattern_radius;  
-       curr_pix.y += pattern_radius;  
-       processPatternCrossb(curr_pix,pattern_radius);
+        curr_pix.x += pattern_radiusb;  
+       curr_pix.y += pattern_radiusb;  
+       processPatternCrossb(curr_pix,pattern_radiusb);
     //Phase4
-        curr_pix.y -= pattern_radius;  
-        processPatternPlusb(curr_pix,pattern_radius);
-        curr_pix.x -= pattern_radius;  
-        curr_pix.y += pattern_radius;  
-        processPatternPlusb(curr_pix,pattern_radius);
+        curr_pix.y -= pattern_radiusb;  
+        processPatternPlusb(curr_pix,pattern_radiusb);
+        curr_pix.x -= pattern_radiusb;  
+        curr_pix.y += pattern_radiusb;  
+        processPatternPlusb(curr_pix,pattern_radiusb);
    // }
 
 }

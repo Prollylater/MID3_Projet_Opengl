@@ -31,11 +31,11 @@ void main()
 #ifdef FRAGMENT_SHADER
 
 layout(location= 0) out vec3  gcolors;
-layout (location = 1) out vec3 gpositions;
-layout (location = 2) out vec3 gnormals;
+layout (location = 1) out vec3 gnormals;
+//layout (location = 3) out vec3 gpositions;
 
 in vec3 fragment_normal;
-in vec3 fragment_pos;
+//in vec3 fragment_pos;
 in vec2 uv_coordinate;
 out vec4 fragment_color;
 
@@ -45,12 +45,12 @@ vec2 normalized_uv = uv_coordinate;
 
 vec3 objet_color = vec3(0.2,0.3,0.6);
 //float cos = dot(normalize(fragment_normal),normalize(vec3(1.0,0.0,0.3)));
-fragment_color = vec4(objet_color, 1.0) ;
+//fragment_color = vec4(objet_color, 1.0) ;
 
 
-gpositions = fragment_pos;
+//gpositions = fragment_pos;
 gnormals = fragment_normal;
-gcolors = fragment_color.xyz;
+gcolors = vec4(objet_color, 1.0).xyz;
 }
 #endif
 

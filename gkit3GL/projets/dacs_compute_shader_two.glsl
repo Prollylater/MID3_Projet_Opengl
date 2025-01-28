@@ -74,9 +74,9 @@ void processPatternPlusa(ivec2 curr_pix, int sample_radius) {
     vec3 ss = (a*a + b*b + c*c + d*d) / 4.0;
 
     if (shading_test(s, ss)) {
-        imageStore(outputtexture, curr_pix, vec4(1.0, 0.0, 0.0, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(1.0, 0.0, 1.0, 1.0));
     } else {
-        imageStore(outputtexture, curr_pix, vec4(0.5, 0.0, 0.0, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(0.5, 0.0, 1.0, 1.0));
     }
 }
 
@@ -95,9 +95,9 @@ void processPatternPlusb(ivec2 curr_pix, int sample_radius) {
     vec3 ss = (a*a + b*b + c*c + d*d) / 4.0;
 
     if (shading_test(s, ss)) {
-        imageStore(outputtexture, curr_pix, vec4(0.0, 1.0, 0.0, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(0.0, 1.0, 0.2, 1.0));
     } else {
-        imageStore(outputtexture, curr_pix, vec4(0.0, 0.0, 0.0, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(0.5, 0.0, 0.0, 1.0));
     }
 }
 
@@ -116,9 +116,9 @@ void processPatternCrossa(ivec2 curr_pix, int sample_radius) {
     vec3 ss = (a*a + b*b + c*c + d*d) / 4.0;
 
     if (shading_test(s, ss)) {
-        imageStore(outputtexture, curr_pix, vec4(1.0, 0.0, 1.0, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(0.2, 0.5, .8, 1.0));
     } else {
-        imageStore(outputtexture, curr_pix, vec4(0.5, 0.0, 0.5, 1.0));
+        imageStore(outputtexture, curr_pix, vec4(0.5, 0.2, 0.3, 1.0));
     }
 }
 
